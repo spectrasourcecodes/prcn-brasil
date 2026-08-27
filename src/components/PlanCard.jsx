@@ -7,8 +7,8 @@ const PlanCard = ({ plan, onSelect }) => {
         <div className="text-center mb-6">
           <h3 className={`text-xl font-bold ${plan.colorClass} mb-2`}>{plan.name}</h3>
           <div className="flex items-baseline justify-center gap-1">
-            <span className="text-3xl font-bold text-white">${plan.minAmount.toLocaleString()}</span>
-            {plan.maxAmount && <span className="text-slate-400">- ${plan.maxAmount.toLocaleString()}</span>}
+            <span className="text-3xl font-bold text-white">R${plan.minAmount.toLocaleString()}</span>
+            {plan.maxAmount && <span className="text-slate-400">- R${plan.maxAmount.toLocaleString()}</span>}
           </div>
         </div>
         
