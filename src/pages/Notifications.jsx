@@ -33,11 +33,11 @@ const Notifications = () => {
         setNotifications(response.data.data);
         setPagination(response.data.pagination);
       } else {
-        toast.error('Failed to load notifications');
+        toast.error('Falha ao carregar notificações');
       }
     } catch (error) {
-      console.error('Notifications fetch error:', error);
-      toast.error(error.response?.data?.message || 'Failed to load notifications');
+      console.error('Erro ao buscar notificações:', error);
+      toast.error(error.response?.data?.message || 'Falha ao carregar notificações');
     } finally {
       setLoading(false);
     }
@@ -53,13 +53,13 @@ const Notifications = () => {
             notif._id === id ? { ...notif, read: true, readAt: new Date().toISOString() } : notif
           )
         );
-        toast.success('Marked as read');
+        toast.success('Marcada como lida');
       } else {
-        toast.error(response.data.message || 'Failed to mark as read');
+        toast.error(response.data.message || 'Falha ao marcar como lida');
       }
     } catch (error) {
-      console.error('Mark as read error:', error);
-      toast.error(error.response?.data?.message || 'Failed to mark as read');
+      console.error('Erro ao marcar como lida:', error);
+      toast.error(error.response?.data?.message || 'Falha ao marcar como lida');
     } finally {
       setActionLoading(false);
     }
@@ -71,13 +71,13 @@ const Notifications = () => {
       const response = await API.delete(`/notifications/${id}`);
       if (response.data.success) {
         setNotifications(notifications.filter((notif) => notif._id !== id));
-        toast.success('Notification deleted');
+        toast.success('Notificação excluída');
       } else {
-        toast.error(response.data.message || 'Failed to delete notification');
+        toast.error(response.data.message || 'Falha ao excluir notificação');
       }
     } catch (error) {
-      console.error('Delete notification error:', error);
-      toast.error(error.response?.data?.message || 'Failed to delete notification');
+      console.error('Erro ao excluir notificação:', error);
+      toast.error(error.response?.data?.message || 'Falha ao excluir notificação');
     } finally {
       setActionLoading(false);
     }
@@ -95,13 +95,13 @@ const Notifications = () => {
             readAt: new Date().toISOString(),
           }))
         );
-        toast.success('All notifications marked as read');
+        toast.success('Todas as notificações marcadas como lidas');
       } else {
-        toast.error(response.data.message || 'Failed to mark all as read');
+        toast.error(response.data.message || 'Falha ao marcar todas como lidas');
       }
     } catch (error) {
-      console.error('Mark all as read error:', error);
-      toast.error(error.response?.data?.message || 'Failed to mark all as read');
+      console.error('Erro ao marcar todas como lidas:', error);
+      toast.error(error.response?.data?.message || 'Falha ao marcar todas como lidas');
     } finally {
       setActionLoading(false);
     }
@@ -115,18 +115,18 @@ const Notifications = () => {
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  // Format time from ISO string
+  // Formata a hora a partir da string ISO
   const formatTime = (date) => {
-    if (!date) return 'Just now';
+    if (!date) return 'Agora mesmo';
     const diff = Date.now() - new Date(date).getTime();
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(minutes / 60);
     const days = Math.floor(hours / 24);
-    if (minutes < 1) return 'Just now';
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    if (days < 7) return `${days}d ago`;
-    return new Date(date).toLocaleDateString();
+    if (minutes < 1) return 'Agora mesmo';
+    if (minutes < 60) return `${minutes} min atrás`;
+    if (hours < 24) return `${hours} h atrás`;
+    if (days < 7) return `${days} d atrás`;
+    return new Date(date).toLocaleDateString('pt-BR');
   };
 
   const filteredNotifications = notifications.filter((notif) => {
@@ -143,7 +143,7 @@ const Notifications = () => {
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <FaSpinner className="w-12 h-12 text-blue-500 animate-spin mx-auto mb-4" />
-              <p className="text-slate-400">Loading notifications...</p>
+              <p className="text-slate-400">Carregando notificações...</p>
             </div>
           </div>
         </main>
@@ -158,8 +158,8 @@ const Notifications = () => {
       <main className="p-4 sm:p-6">
         <div className="mb-6 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white">Notifications</h1>
-            <p className="text-slate-400 mt-1">Stay updated with your account activities</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white">Notificações</h1>
+            <p className="text-slate-400 mt-1">Mantenha-se atualizado com as atividades da sua conta</p>
           </div>
           {unreadCount > 0 && (
             <button
@@ -167,12 +167,12 @@ const Notifications = () => {
               disabled={actionLoading}
               className="px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700 transition text-sm disabled:opacity-50"
             >
-              {actionLoading ? <FaSpinner className="animate-spin inline" /> : 'Mark all as read'}
+              {actionLoading ? <FaSpinner className="animate-spin inline" /> : 'Marcar todas como lidas'}
             </button>
           )}
         </div>
 
-        {/* Filters */}
+        {/* Filtros */}
         <div className="flex gap-2 mb-6 overflow-x-auto">
           <button
             onClick={() => setFilter('all')}
@@ -182,7 +182,7 @@ const Notifications = () => {
                 : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
             }`}
           >
-            All ({notifications.length})
+            Todas ({notifications.length})
           </button>
           <button
             onClick={() => setFilter('unread')}
@@ -192,7 +192,7 @@ const Notifications = () => {
                 : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
             }`}
           >
-            Unread ({unreadCount})
+            Não lidas ({unreadCount})
           </button>
           <button
             onClick={() => setFilter('read')}
@@ -202,11 +202,11 @@ const Notifications = () => {
                 : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
             }`}
           >
-            Read
+            Lidas
           </button>
         </div>
 
-        {/* Notifications List */}
+        {/* Lista de Notificações */}
         <div className="space-y-3">
           {filteredNotifications.length > 0 ? (
             filteredNotifications.map((notification) => (
@@ -238,7 +238,7 @@ const Notifications = () => {
                         onClick={() => markAsRead(notification._id)}
                         disabled={actionLoading}
                         className="p-2 hover:bg-slate-700 rounded-lg transition disabled:opacity-50"
-                        title="Mark as read"
+                        title="Marcar como lida"
                       >
                         <FaCheckCircle className="text-green-500" />
                       </button>
@@ -247,7 +247,7 @@ const Notifications = () => {
                       onClick={() => deleteNotification(notification._id)}
                       disabled={actionLoading}
                       className="p-2 hover:bg-slate-700 rounded-lg transition disabled:opacity-50"
-                      title="Delete"
+                      title="Excluir"
                     >
                       <FaTrash className="text-red-500" />
                     </button>
@@ -258,12 +258,12 @@ const Notifications = () => {
           ) : (
             <div className="text-center py-12">
               <BellIcon className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-              <p className="text-slate-400">No notifications found</p>
+              <p className="text-slate-400">Nenhuma notificação encontrada</p>
             </div>
           )}
         </div>
 
-        {/* Load More */}
+        {/* Carregar mais */}
         {pagination.pages > 1 && pagination.page < pagination.pages && (
           <div className="text-center mt-6">
             <button
@@ -271,7 +271,7 @@ const Notifications = () => {
               disabled={loading}
               className="px-6 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-white transition disabled:opacity-50"
             >
-              {loading ? <FaSpinner className="animate-spin inline" /> : 'Load More'}
+              {loading ? <FaSpinner className="animate-spin inline" /> : 'Carregar mais'}
             </button>
           </div>
         )}

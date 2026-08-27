@@ -8,7 +8,7 @@ import { SITE_NAME } from '../data/mockData';
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
-  const [step, setStep] = useState(1); // 1: email, 2: reset password
+  const [step, setStep] = useState(1); // 1: email, 2: resetar senha
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [resetToken, setResetToken] = useState('');
@@ -23,12 +23,12 @@ const ForgotPassword = () => {
     e.preventDefault();
 
     if (!email) {
-      toast.error('Please enter your email address');
+      toast.error('Digite seu endereço de e-mail');
       return;
     }
 
     if (!/\S+@\S+\.\S+/.test(email)) {
-      toast.error('Please enter a valid email address');
+      toast.error('Digite um endereço de e-mail válido');
       return;
     }
 
@@ -38,11 +38,11 @@ const ForgotPassword = () => {
       if (response.data.success) {
         setResetToken(response.data.data.token);
         setStep(2);
-        toast.success('Email verified! Please set your new password.');
+        toast.success('E-mail verificado! Defina sua nova senha.');
       }
     } catch (error) {
-      console.error('Email verification error:', error);
-      const message = error.response?.data?.message || 'Failed to verify email. Please try again.';
+      console.error('Erro na verificação do e-mail:', error);
+      const message = error.response?.data?.message || 'Falha ao verificar e-mail. Tente novamente.';
       toast.error(message);
     } finally {
       setLoading(false);
@@ -53,17 +53,17 @@ const ForgotPassword = () => {
     e.preventDefault();
 
     if (!formData.newPassword || !formData.confirmPassword) {
-      toast.error('Please fill in all fields');
+      toast.error('Preencha todos os campos');
       return;
     }
 
     if (formData.newPassword !== formData.confirmPassword) {
-      toast.error('Passwords do not match');
+      toast.error('As senhas não coincidem');
       return;
     }
 
     if (formData.newPassword.length < 6) {
-      toast.error('Password must be at least 6 characters');
+      toast.error('A senha deve ter pelo menos 6 caracteres');
       return;
     }
 
@@ -75,14 +75,14 @@ const ForgotPassword = () => {
         confirmPassword: formData.confirmPassword,
       });
       if (response.data.success) {
-        toast.success('Password reset successfully! Please login.');
+        toast.success('Senha redefinida com sucesso! Faça login.');
         navigate('/login');
       }
     } catch (error) {
-      console.error('Password reset error:', error);
-      const message = error.response?.data?.message || 'Failed to reset password. Please try again.';
+      console.error('Erro ao redefinir senha:', error);
+      const message = error.response?.data?.message || 'Falha ao redefinir senha. Tente novamente.';
       toast.error(message);
-      // If token expired, go back to step 1
+      // Se o token expirou, volta para o passo 1
       if (error.response?.status === 400 && message.includes('expired')) {
         setStep(1);
         setResetToken('');
@@ -92,7 +92,7 @@ const ForgotPassword = () => {
     }
   };
 
-  // Step 1: Email verification
+  // Passo 1: Verificação de e-mail
   if (step === 1) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
@@ -109,25 +109,25 @@ const ForgotPassword = () => {
                   { SITE_NAME }
                 </h1>
               </Link>
-              <p className="text-slate-400 mt-2">Verify your email to reset password</p>
+              <p className="text-slate-400 mt-2">Verifique seu e-mail para redefinir a senha</p>
             </div>
 
             <form onSubmit={handleEmailSubmit} className="space-y-6">
               <div>
-                <label className="block text-slate-300 text-sm font-medium mb-2">Email Address</label>
+                <label className="block text-slate-300 text-sm font-medium mb-2">E-mail</label>
                 <div className="relative">
                   <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com"
+                    placeholder="voce@exemplo.com"
                     className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-10 pr-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
                     required
                   />
                 </div>
                 <p className="text-xs text-slate-500 mt-1">
-                  Enter your registered email to verify your identity.
+                  Digite seu e-mail registrado para verificar sua identidade.
                 </p>
               </div>
 
@@ -139,25 +139,25 @@ const ForgotPassword = () => {
                 {loading ? (
                   <>
                     <FaSpinner className="animate-spin" />
-                    Verifying...
+                    Verificando...
                   </>
                 ) : (
-                  'Verify Email'
+                  'Verificar E-mail'
                 )}
               </button>
             </form>
 
             <div className="mt-6 text-center">
               <Link to="/login" className="text-blue-400 hover:text-blue-300 transition inline-flex items-center gap-2">
-                <FaArrowLeft className="text-sm" /> Back to Login
+                <FaArrowLeft className="text-sm" /> Voltar ao Login
               </Link>
             </div>
 
             <div className="mt-6 pt-6 border-t border-slate-700">
               <p className="text-xs text-center text-slate-500">
-                Remember your password?{' '}
+                Lembra da sua senha?{' '}
                 <Link to="/login" className="text-blue-400 hover:text-blue-300">
-                  Sign In
+                  Entrar
                 </Link>
               </p>
             </div>
@@ -167,7 +167,7 @@ const ForgotPassword = () => {
     );
   }
 
-  // Step 2: Reset password
+  // Passo 2: Redefinir senha
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
       <div className="absolute inset-0 overflow-hidden">
@@ -183,19 +183,19 @@ const ForgotPassword = () => {
                 { SITE_NAME }
               </h1>
             </Link>
-            <p className="text-slate-400 mt-2">Set your new password</p>
+            <p className="text-slate-400 mt-2">Defina sua nova senha</p>
           </div>
 
           <form onSubmit={handlePasswordReset} className="space-y-6">
             <div className="p-3 bg-green-500/10 border border-green-500/30 rounded-lg text-center">
               <p className="text-green-400 text-sm flex items-center justify-center gap-2">
                 <FaCheckCircle className="text-green-500" />
-                Email verified: <strong>{email}</strong>
+                E-mail verificado: <strong>{email}</strong>
               </p>
             </div>
 
             <div>
-              <label className="block text-slate-300 text-sm font-medium mb-2">New Password</label>
+              <label className="block text-slate-300 text-sm font-medium mb-2">Nova Senha</label>
               <div className="relative">
                 <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
                 <input
@@ -217,7 +217,7 @@ const ForgotPassword = () => {
             </div>
 
             <div>
-              <label className="block text-slate-300 text-sm font-medium mb-2">Confirm Password</label>
+              <label className="block text-slate-300 text-sm font-medium mb-2">Confirmar Senha</label>
               <div className="relative">
                 <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
                 <input
@@ -246,24 +246,24 @@ const ForgotPassword = () => {
               {loading ? (
                 <>
                   <FaSpinner className="animate-spin" />
-                  Resetting...
+                  Redefinindo...
                 </>
               ) : (
-                'Reset Password'
+                'Redefinir Senha'
               )}
             </button>
           </form>
 
           <div className="mt-6 text-center">
             <Link to="/login" className="text-blue-400 hover:text-blue-300 transition inline-flex items-center gap-2">
-              <FaArrowLeft className="text-sm" /> Back to Login
+              <FaArrowLeft className="text-sm" /> Voltar ao Login
             </Link>
           </div>
 
           {resetToken && (
             <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
               <p className="text-yellow-500 text-xs text-center">
-                ⏳ This reset link will expire in 5 minutes.
+                ⏳ Este link de redefinição expira em 5 minutos.
               </p>
             </div>
           )}

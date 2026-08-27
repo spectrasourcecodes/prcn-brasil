@@ -8,7 +8,7 @@ import PlanCard from '../components/PlanCard';
 import { investmentService } from '../services/investmentService';
 import { adminWalletService } from '../services/adminWalletService';
 import { useAuth } from '../auth/userAuth';
-import API from '../utils/axios'; // Import API for transaction creation
+import API from '../utils/axios';
 
 const InvestmentPlans = () => {
   const navigate = useNavigate();
@@ -33,7 +33,7 @@ const InvestmentPlans = () => {
       const data = await investmentService.getPlans();
       setPlans(data);
     } catch (error) {
-      toast.error('Failed to load investment plans');
+      toast.error('Falha ao carregar os planos de investimento');
     } finally {
       setLoading(false);
     }
@@ -45,13 +45,13 @@ const InvestmentPlans = () => {
       setWallets(data);
       if (data.length > 0) setSelectedWallet(data[0]);
     } catch (error) {
-      console.error('Failed to load wallets:', error);
+      console.error('Falha ao carregar carteiras:', error);
     }
   };
 
   const handleInvestClick = (plan) => {
     if (!user) {
-      toast.error('Please login first');
+      toast.error('Por favor, faça login primeiro');
       navigate('/login');
       return;
     }
@@ -64,9 +64,9 @@ const InvestmentPlans = () => {
     const val = parseFloat(e.target.value);
     if (selectedPlan) {
       if (val < selectedPlan.minimumInvestment) {
-        toast.error(`Minimum investment is $${selectedPlan.minimumInvestment}`);
+        toast.error(`O investimento mínimo é $${selectedPlan.minimumInvestment}`);
       } else if (val > selectedPlan.maximumInvestment) {
-        toast.error(`Maximum investment is $${selectedPlan.maximumInvestment}`);
+        toast.error(`O investimento máximo é $${selectedPlan.maximumInvestment}`);
       }
     }
     setAmount(e.target.value);
@@ -74,22 +74,22 @@ const InvestmentPlans = () => {
 
   const handleConfirmPayment = async () => {
     if (!selectedWallet) {
-      toast.error('Please select a payment method');
+      toast.error('Por favor, selecione um método de pagamento');
       return;
     }
     const investAmount = parseFloat(amount);
     if (!investAmount || investAmount < selectedPlan.minimumInvestment) {
-      toast.error(`Minimum investment is $${selectedPlan.minimumInvestment}`);
+      toast.error(`O investimento mínimo é $${selectedPlan.minimumInvestment}`);
       return;
     }
     if (investAmount > selectedPlan.maximumInvestment) {
-      toast.error(`Maximum investment is $${selectedPlan.maximumInvestment}`);
+      toast.error(`O investimento máximo é $${selectedPlan.maximumInvestment}`);
       return;
     }
 
     setCreating(true);
     try {
-      // 1. Create investment
+      // 1. Criar investimento
       const response = await investmentService.createInvestment({
         planId: selectedPlan._id,
         amount: investAmount,
@@ -97,12 +97,12 @@ const InvestmentPlans = () => {
         walletAddress: selectedWallet.address,
       });
 
-      // 2. Create transaction record
+      // 2. Criar registro de transação
       await API.post('/transactions', {
         type: 'investment',
         amount: investAmount,
         currency: 'USD',
-        description: `Investment in ${selectedPlan.name} plan`,
+        description: `Investimento no plano ${selectedPlan.name}`,
         metadata: {
           planId: selectedPlan._id,
           planName: selectedPlan.name,
@@ -117,7 +117,7 @@ const InvestmentPlans = () => {
         status: 'pending',
       });
 
-      toast.success('Investment created! Please upload payment proof.');
+      toast.success('Investimento criado! Por favor, envie o comprovante de pagamento.');
       setShowWalletModal(false);
       navigate('/payment-proof', {
         state: {
@@ -127,8 +127,8 @@ const InvestmentPlans = () => {
         },
       });
     } catch (error) {
-      console.error('Investment creation error:', error);
-      toast.error(error.response?.data?.message || 'Failed to create investment');
+      console.error('Erro ao criar investimento:', error);
+      toast.error(error.response?.data?.message || 'Falha ao criar investimento');
     } finally {
       setCreating(false);
     }
@@ -171,8 +171,8 @@ const InvestmentPlans = () => {
       <Navbar />
       <div className="p-4 sm:p-6">
         <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">Investment Plans</h1>
-          <p className="text-slate-400 mt-1">Choose a plan that fits your goals</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">Planos de Investimento</h1>
+          <p className="text-slate-400 mt-1">Escolha um plano que se adapte aos seus objetivos</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -199,12 +199,12 @@ const InvestmentPlans = () => {
 
         {plans.length === 0 && (
           <div className="text-center py-12 text-slate-400">
-            No investment plans available at the moment.
+            Nenhum plano de investimento disponível no momento.
           </div>
         )}
       </div>
 
-      {/* Payment Modal */}
+      {/* Modal de Pagamento */}
       <AnimatePresence>
         {showWalletModal && selectedPlan && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
@@ -214,9 +214,9 @@ const InvestmentPlans = () => {
               exit={{ opacity: 0, scale: 0.95 }}
               className="bg-slate-800/95 backdrop-blur-xl rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-slate-700 shadow-2xl"
             >
-              {/* Header */}
+              {/* Cabeçalho */}
               <div className="sticky top-0 bg-slate-800/95 backdrop-blur-sm border-b border-slate-700 px-6 py-4 flex justify-between items-center rounded-t-2xl">
-                <h2 className="text-xl font-bold text-white">Invest in {selectedPlan.name}</h2>
+                <h2 className="text-xl font-bold text-white">Investir em {selectedPlan.name}</h2>
                 <button
                   onClick={() => setShowWalletModal(false)}
                   className="p-2 hover:bg-slate-700 rounded-lg transition"
@@ -226,29 +226,29 @@ const InvestmentPlans = () => {
               </div>
 
               <div className="p-6 space-y-6">
-                {/* Plan Summary */}
+                {/* Resumo do Plano */}
                 <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-400">Plan</span>
+                    <span className="text-slate-400">Plano</span>
                     <span className="text-white font-medium">{selectedPlan.name}</span>
                   </div>
                   <div className="flex justify-between text-sm mt-1">
-                    <span className="text-slate-400">Daily ROI</span>
+                    <span className="text-slate-400">ROI Diário</span>
                     <span className="text-green-400">{selectedPlan.dailyROI}%</span>
                   </div>
                   <div className="flex justify-between text-sm mt-1">
-                    <span className="text-slate-400">Duration</span>
-                    <span className="text-white">{selectedPlan.duration} days</span>
+                    <span className="text-slate-400">Duração</span>
+                    <span className="text-white">{selectedPlan.duration} dias</span>
                   </div>
                   <div className="flex justify-between text-sm mt-1">
-                    <span className="text-slate-400">Expected Profit</span>
+                    <span className="text-slate-400">Lucro Esperado</span>
                     <span className="text-blue-400">{selectedPlan.expectedProfit}%</span>
                   </div>
                 </div>
 
-                {/* Amount Input */}
+                {/* Campo de Valor */}
                 <div>
-                  <label className="block text-slate-300 text-sm font-medium mb-2">Investment Amount (USD)</label>
+                  <label className="block text-slate-300 text-sm font-medium mb-2">Valor do Investimento (USD)</label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">$</span>
                     <input
@@ -262,14 +262,14 @@ const InvestmentPlans = () => {
                     />
                   </div>
                   <div className="flex justify-between text-xs text-slate-400 mt-1">
-                    <span>Min: ${selectedPlan.minimumInvestment}</span>
-                    <span>Max: ${selectedPlan.maximumInvestment}</span>
+                    <span>Mín: ${selectedPlan.minimumInvestment}</span>
+                    <span>Máx: ${selectedPlan.maximumInvestment}</span>
                   </div>
                 </div>
 
-                {/* Select Wallet */}
+                {/* Selecionar Carteira */}
                 <div>
-                  <label className="block text-slate-300 text-sm font-medium mb-2">Select Payment Method</label>
+                  <label className="block text-slate-300 text-sm font-medium mb-2">Selecione o Método de Pagamento</label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {wallets.map((wallet) => {
                       const isSelected = selectedWallet?._id === wallet._id;
@@ -294,23 +294,23 @@ const InvestmentPlans = () => {
                   </div>
                 </div>
 
-                {/* Wallet Details (if selected) */}
+                {/* Detalhes da Carteira (se selecionada) */}
                 {selectedWallet && (
                   <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
-                    <p className="text-slate-300 text-sm font-medium">Payment Details</p>
+                    <p className="text-slate-300 text-sm font-medium">Detalhes do Pagamento</p>
                     <div className="mt-2 space-y-1 text-sm">
-                      <p><span className="text-slate-400">Currency:</span> <span className="text-white">{selectedWallet.currency}</span></p>
+                      <p><span className="text-slate-400">Moeda:</span> <span className="text-white">{selectedWallet.currency}</span></p>
                       {selectedWallet.type === 'crypto' && (
-                        <p><span className="text-slate-400">Network:</span> <span className="text-white">{selectedWallet.details?.network || 'N/A'}</span></p>
+                        <p><span className="text-slate-400">Rede:</span> <span className="text-white">{selectedWallet.details?.network || 'N/A'}</span></p>
                       )}
                       <div>
-                        <span className="text-slate-400">Address:</span>
+                        <span className="text-slate-400">Endereço:</span>
                         <div className="flex items-center gap-2 mt-1">
                           <code className="text-xs text-white break-all flex-1 bg-slate-800 p-2 rounded">{selectedWallet.address}</code>
                           <button
                             onClick={() => {
                               navigator.clipboard.writeText(selectedWallet.address);
-                              toast.success('Address copied!');
+                              toast.success('Endereço copiado!');
                             }}
                             className="p-2 bg-slate-700 rounded-lg hover:bg-slate-600 transition"
                           >
@@ -322,13 +322,13 @@ const InvestmentPlans = () => {
                   </div>
                 )}
 
-                {/* Action Buttons */}
+                {/* Botões de Ação */}
                 <div className="flex flex-col sm:flex-row gap-3">
                   <button
                     onClick={() => setShowWalletModal(false)}
                     className="flex-1 py-3 rounded-lg bg-slate-700 text-white font-semibold hover:bg-slate-600 transition"
                   >
-                    Cancel
+                    Cancelar
                   </button>
                   <button
                     onClick={handleConfirmPayment}
@@ -337,18 +337,18 @@ const InvestmentPlans = () => {
                   >
                     {creating ? (
                       <>
-                        <FaSpinner className="animate-spin" /> Processing...
+                        <FaSpinner className="animate-spin" /> Processando...
                       </>
                     ) : (
                       <>
-                        I Have Made Payment <FaArrowRight />
+                        Já Efetuei o Pagamento <FaArrowRight />
                       </>
                     )}
                   </button>
                 </div>
 
                 <p className="text-yellow-500 text-xs text-center">
-                  ⚠️ After payment, you will be redirected to upload your transaction proof.
+                  ⚠️ Após o pagamento, você será redirecionado para enviar o comprovante da transação.
                 </p>
               </div>
             </motion.div>

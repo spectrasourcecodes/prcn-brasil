@@ -9,14 +9,14 @@ import { useAuth } from '../auth/userAuth';
 import { getCurrencySymbol } from '../utils/currency';
 import API from '../utils/axios';
 
-// ✅ HARDCODED WITHDRAWAL SETTINGS – limit removed
+// ✅ CONFIGURAÇÕES DE SAQUE CODIFICADAS – limite removido
 const WITHDRAWAL_SETTINGS = {
-  popupEnabled: false,      // true = show popup, false = allow withdrawal
-  popupTitle: 'Withdrawal Restricted',
-  popupMessage: 'Withdrawal is currently restricted. Please contact support for assistance.',
+  popupEnabled: false,      // true = mostrar popup, false = permitir saque
+  popupTitle: 'Saque Restrito',
+  popupMessage: 'O saque está temporariamente restrito. Entre em contato com o suporte para assistência.',
 };
 
-// ✅ WITHDRAWAL LIMIT CONSTANTS
+// ✅ CONSTANTES DE LIMITE DE SAQUE
 const MIN_WITHDRAWAL = 100;
 const ACCOUNT_LIMIT = 10;
 
@@ -43,7 +43,7 @@ const Withdraw = () => {
           setKycStatus(response.data.data.status);
         }
       } catch (error) {
-        console.error('KYC status check error:', error);
+        console.error('Erro ao verificar status do KYC:', error);
         setKycStatus('error');
       }
     };
@@ -56,7 +56,7 @@ const Withdraw = () => {
         const wallet = await walletService.getWallet();
         setWalletBalance(wallet.balance || 0);
       } catch (error) {
-        console.error('Failed to fetch wallet:', error);
+        console.error('Falha ao buscar carteira:', error);
       }
     };
     fetchData();
@@ -76,27 +76,27 @@ const Withdraw = () => {
     const amountNum = parseFloat(amount);
 
     if (!amount || amountNum < 1) {
-      toast.error('Please enter a valid amount');
+      toast.error('Digite um valor válido');
       return;
     }
 
-    // ✅ KYC check – only verified users can withdraw
+    // ✅ Verificação KYC – apenas usuários verificados podem sacar
     if (kycStatus !== 'verified') {
-      toast.error('KYC verification required. Please complete your KYC to withdraw.');
+      toast.error('Verificação KYC necessária. Complete seu KYC para sacar.');
       return;
     }
 
-    // ✅ WITHDRAWAL LIMIT CHECK – show upgrade modal if amount is outside allowed range
+    // ✅ VERIFICAÇÃO DE LIMITE DE SAQUE – mostra modal de upgrade se o valor estiver fora do intervalo permitido
     if (amountNum < MIN_WITHDRAWAL || amountNum > ACCOUNT_LIMIT) {
-      setModalTitle('Withdrawal Limit');
+      setModalTitle('Limite de Saque');
       setModalMessage(
-        `Your current withdrawal limit is ${ACCOUNT_LIMIT} and the minimum withdrawal is ${MIN_WITHDRAWAL}. Please upgrade your account to complete this withdrawal.`
+        `Seu limite atual de saque é ${ACCOUNT_LIMIT} e o saque mínimo é ${MIN_WITHDRAWAL}. Faça upgrade da sua conta para concluir este saque.`
       );
       setShowLimitModal(true);
       return;
     }
 
-    // ✅ Popup check (if enabled, show modal and abort)
+    // ✅ Verificação de popup (se ativado, mostra modal e aborta)
     if (WITHDRAWAL_SETTINGS.popupEnabled) {
       setModalTitle(WITHDRAWAL_SETTINGS.popupTitle);
       setModalMessage(WITHDRAWAL_SETTINGS.popupMessage);
@@ -104,14 +104,14 @@ const Withdraw = () => {
       return;
     }
 
-    // ✅ Balance check
+    // ✅ Verificação de saldo
     if (amountNum > walletBalance) {
-      toast.error('Insufficient balance');
+      toast.error('Saldo insuficiente');
       return;
     }
 
     if (!address) {
-      toast.error('Please enter a wallet address');
+      toast.error('Digite um endereço de carteira');
       return;
     }
 
@@ -125,7 +125,7 @@ const Withdraw = () => {
         type: 'withdrawal',
         amount: amountNum,
         currency: 'USD',
-        description: `Withdrawal to ${crypto} wallet`,
+        description: `Saque para carteira ${crypto}`,
         metadata: {
           cryptoCurrency: crypto,
           walletAddress: address,
@@ -134,11 +134,11 @@ const Withdraw = () => {
       });
 
       if (response.data.success) {
-        toast.success('Withdrawal request submitted!');
+        toast.success('Solicitação de saque enviada!');
         navigate('/transactions');
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Withdrawal failed');
+      toast.error(error.response?.data?.message || 'Falha no saque');
     } finally {
       setLoading(false);
     }
@@ -159,8 +159,8 @@ const Withdraw = () => {
       <Navbar />
       <div className="p-4 sm:p-6 max-w-2xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">Withdraw Funds</h1>
-          <p className="text-slate-400 mt-1">Withdraw your earnings</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">Sacar Fundos</h1>
+          <p className="text-slate-400 mt-1">Saque seus ganhos</p>
         </div>
 
         <motion.div
@@ -170,24 +170,24 @@ const Withdraw = () => {
         >
           <div className="bg-slate-900 rounded-lg p-4 mb-6">
             <div className="flex justify-between items-center">
-              <span className="text-slate-400">Available Balance</span>
+              <span className="text-slate-400">Saldo Disponível</span>
               <span className="text-xl font-bold text-white">{formatCurrency(walletBalance)}</span>
             </div>
           </div>
 
-          {/* KYC Status Warning */}
+          {/* Aviso de Status KYC */}
           {!isKycVerified && (
             <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-3">
               <FaLock className="text-red-500 text-sm" />
               <p className="text-red-400 text-sm">
                 {kycStatus === 'pending'
-                  ? 'Your KYC is pending approval. Please wait for verification.'
-                  : 'KYC verification required to withdraw. Please complete your KYC first.'}
+                  ? 'Seu KYC está pendente de aprovação. Aguarde a verificação.'
+                  : 'Verificação KYC necessária para sacar. Complete seu KYC primeiro.'}
               </p>
             </div>
           )}
 
-          {/* Popup Warning (only when popup is enabled and KYC verified) */}
+          {/* Aviso de Popup (apenas quando ativado e KYC verificado) */}
           {WITHDRAWAL_SETTINGS.popupEnabled && isKycVerified && (
             <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg flex items-center gap-3">
               <FaInfoCircle className="text-blue-500 text-sm" />
@@ -197,7 +197,7 @@ const Withdraw = () => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-slate-300 text-sm font-medium mb-2">Select Cryptocurrency</label>
+              <label className="block text-slate-300 text-sm font-medium mb-2">Selecione a Criptomoeda</label>
               <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                 {cryptos.map((c) => (
                   <button
@@ -218,7 +218,7 @@ const Withdraw = () => {
             </div>
 
             <div>
-              <label className="block text-slate-300 text-sm font-medium mb-2">Amount ({user?.currency || 'USD'})</label>
+              <label className="block text-slate-300 text-sm font-medium mb-2">Valor ({user?.currency || 'USD'})</label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">
                   {currencySymbol}
@@ -227,7 +227,7 @@ const Withdraw = () => {
                   type="number"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  placeholder="Enter amount"
+                  placeholder="Digite o valor"
                   min="1"
                   step="0.01"
                   className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-8 pr-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
@@ -236,12 +236,12 @@ const Withdraw = () => {
             </div>
 
             <div>
-              <label className="block text-slate-300 text-sm font-medium mb-2">Wallet Address</label>
+              <label className="block text-slate-300 text-sm font-medium mb-2">Endereço da Carteira</label>
               <input
                 type="text"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                placeholder="Enter your wallet address"
+                placeholder="Digite o endereço da sua carteira"
                 className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
               />
             </div>
@@ -255,7 +255,7 @@ const Withdraw = () => {
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
               ) : (
                 <>
-                  <FaArrowDown className="text-sm" /> Request Withdrawal
+                  <FaArrowDown className="text-sm" /> Solicitar Saque
                 </>
               )}
             </button>
@@ -263,7 +263,7 @@ const Withdraw = () => {
         </motion.div>
       </div>
 
-      {/* Withdrawal Popup Modal */}
+      {/* Modal de Popup de Saque */}
       <AnimatePresence>
         {showLimitModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
@@ -296,7 +296,7 @@ const Withdraw = () => {
                   onClick={handleModalClose}
                   className="w-full py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:opacity-90 transition"
                 >
-                  I Understand
+                  Entendi
                 </button>
               </div>
             </motion.div>

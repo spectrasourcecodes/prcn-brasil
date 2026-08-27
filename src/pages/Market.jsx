@@ -6,7 +6,7 @@ import { FaBitcoin, FaEthereum } from 'react-icons/fa';
 import { SiBinance, SiSolana, SiCardano, SiDogecoin, SiRipple, SiTether } from 'react-icons/si';
 import MarketTicker from '../components/MarketTicker';
 
-// Mock market data – no API calls
+// Dados de mercado simulados – sem chamadas de API
 const MOCK_COINS = [
   { id: 'bitcoin', symbol: 'BTC', name: 'Bitcoin', price: 43250, change: 2.5, marketCap: 845000000000, volume: 28000000000, icon: FaBitcoin },
   { id: 'ethereum', symbol: 'ETH', name: 'Ethereum', price: 2250, change: -1.2, marketCap: 270000000000, volume: 15000000000, icon: FaEthereum },
@@ -26,7 +26,7 @@ const Market = () => {
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // No API call – just use mock data
+  // Sem chamada de API – usa apenas dados simulados
   useEffect(() => {
     setCoins(MOCK_COINS);
   }, []);
@@ -58,14 +58,14 @@ const Market = () => {
         <div className="mb-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">Market</h1>
-              <p className="text-slate-400 mt-1">Live cryptocurrency prices (mock data)</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white">Mercado</h1>
+              <p className="text-slate-400 mt-1">Preços de criptomoedas ao vivo (dados simulados)</p>
             </div>
             <div className="relative w-full sm:w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search coins..."
+                placeholder="Buscar moedas..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 transition"
@@ -74,24 +74,24 @@ const Market = () => {
           </div>
         </div>
 
-        {/* Market Ticker */}
+        {/* Ticker do Mercado */}
         <div className="mb-6">
           <MarketTicker />
         </div>
 
-        {/* Coin List */}
+        {/* Lista de Moedas */}
         <div className="bg-slate-800 rounded-2xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-slate-700/50">
                 <tr className="text-left text-xs text-slate-400 uppercase tracking-wider">
                   <th className="px-4 py-3">#</th>
-                  <th className="px-4 py-3">Name</th>
-                  <th className="px-4 py-3 text-right">Price</th>
-                  <th className="px-4 py-3 text-right">24h Change</th>
-                  <th className="px-4 py-3 text-right hidden md:table-cell">Market Cap</th>
+                  <th className="px-4 py-3">Nome</th>
+                  <th className="px-4 py-3 text-right">Preço</th>
+                  <th className="px-4 py-3 text-right">Variação 24h</th>
+                  <th className="px-4 py-3 text-right hidden md:table-cell">Capitalização</th>
                   <th className="px-4 py-3 text-right hidden lg:table-cell">Volume</th>
-                  <th className="px-4 py-3 text-right">Favorite</th>
+                  <th className="px-4 py-3 text-right">Favorito</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-700">
@@ -144,7 +144,7 @@ const Market = () => {
             </table>
           </div>
           {filteredCoins.length === 0 && (
-            <div className="p-8 text-center text-slate-400">No coins found</div>
+            <div className="p-8 text-center text-slate-400">Nenhuma moeda encontrada</div>
           )}
         </div>
       </main>

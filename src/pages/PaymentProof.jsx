@@ -22,7 +22,7 @@ const PaymentProof = () => {
 
   useEffect(() => {
     if (!investmentId) {
-      toast.error('Invalid request');
+      toast.error('Requisição inválida');
       navigate('/plans');
       return;
     }
@@ -36,8 +36,8 @@ const PaymentProof = () => {
       const cryptoWallet = wallets.find(w => w.type === 'crypto') || wallets[0];
       setWallet(cryptoWallet);
     } catch (error) {
-      console.error('Error fetching payment details:', error);
-      toast.error('Failed to load payment instructions');
+      console.error('Erro ao buscar detalhes de pagamento:', error);
+      toast.error('Falha ao carregar instruções de pagamento');
     } finally {
       setLoading(false);
     }
@@ -46,16 +46,16 @@ const PaymentProof = () => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Validate file size (max 5MB)
+      // Validar tamanho do arquivo (máx 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        toast.error('File size must be less than 5MB');
+        toast.error('O arquivo deve ter menos de 5MB');
         e.target.value = '';
         return;
       }
-      // Validate file type
+      // Validar tipo do arquivo
       const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
       if (!validTypes.includes(file.type)) {
-        toast.error('Please upload a JPG, PNG, or PDF file');
+        toast.error('Por favor, envie um arquivo JPG, PNG ou PDF');
         e.target.value = '';
         return;
       }
@@ -75,7 +75,7 @@ const PaymentProof = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!proofFile) {
-      toast.error('Please upload a proof of payment');
+      toast.error('Por favor, envie um comprovante de pagamento');
       return;
     }
 
@@ -83,14 +83,14 @@ const PaymentProof = () => {
     setUploadProgress(10);
 
     try {
-      // Create FormData for file upload
+      // Criar FormData para upload do arquivo
       const formData = new FormData();
       formData.append('proofImage', proofFile);
       formData.append('type', type);
       formData.append('amount', amount || 0);
-      formData.append('description', `${type === 'investment' ? 'Investment' : 'Deposit'} payment proof`);
+      formData.append('description', `${type === 'investment' ? 'Investimento' : 'Depósito'} - comprovante de pagamento`);
 
-      // Upload to server - will upload to Cloudinary and save to Proofs model
+      // Enviar para o servidor - fará upload para o Cloudinary e salvará no modelo Proofs
       const response = await API.post(`/proofs/${investmentId}/upload`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -104,17 +104,17 @@ const PaymentProof = () => {
       setUploadProgress(100);
 
       if (response.data.success) {
-        toast.success('Proof uploaded successfully! Your investment will be verified.');
+        toast.success('Comprovante enviado com sucesso! Seu investimento será verificado.');
         setTimeout(() => {
           navigate('/transactions');
         }, 1500);
       } else {
-        toast.error(response.data.message || 'Failed to upload proof');
+        toast.error(response.data.message || 'Falha ao enviar comprovante');
       }
     } catch (error) {
-      console.error('Proof upload error:', error);
+      console.error('Erro no envio do comprovante:', error);
       setUploadProgress(0);
-      toast.error(error.response?.data?.message || 'Failed to upload proof. Please try again.');
+      toast.error(error.response?.data?.message || 'Falha ao enviar comprovante. Tente novamente.');
     } finally {
       setSubmitting(false);
     }
@@ -123,7 +123,7 @@ const PaymentProof = () => {
   const copyAddress = () => {
     if (wallet?.address) {
       navigator.clipboard.writeText(wallet.address);
-      toast.success('Address copied!');
+      toast.success('Endereço copiado!');
     }
   };
 
@@ -146,12 +146,12 @@ const PaymentProof = () => {
           onClick={() => navigate(-1)}
           className="flex items-center gap-2 text-slate-400 hover:text-white mb-4 transition"
         >
-          <FaArrowLeft /> Back
+          <FaArrowLeft /> Voltar
         </button>
 
         <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">Payment Confirmation</h1>
-          <p className="text-slate-400 mt-1">Complete your {type} by uploading payment proof</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">Confirmação de Pagamento</h1>
+          <p className="text-slate-400 mt-1">Complete seu {type === 'investment' ? 'investimento' : 'depósito'} enviando o comprovante de pagamento</p>
         </div>
 
         <motion.div
@@ -159,40 +159,40 @@ const PaymentProof = () => {
           animate={{ opacity: 1, y: 0 }}
           className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-6 border border-slate-700 space-y-6"
         >
-          {/* Investment Summary */}
+          {/* Resumo do Investimento/Depósito */}
           <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
-            <p className="text-slate-400 text-sm">{type === 'investment' ? 'Investment' : 'Deposit'} Details</p>
+            <p className="text-slate-400 text-sm">Detalhes do {type === 'investment' ? 'Investimento' : 'Depósito'}</p>
             <div className="mt-2 flex justify-between">
-              <span className="text-white font-medium">Plan</span>
+              <span className="text-white font-medium">Plano</span>
               <span className="text-white">{planName || 'N/A'}</span>
             </div>
             <div className="flex justify-between mt-1">
-              <span className="text-white font-medium">Amount</span>
+              <span className="text-white font-medium">Valor</span>
               <span className="text-white">${amount || '0'}</span>
             </div>
             <div className="flex justify-between mt-1">
-              <span className="text-white font-medium">Reference</span>
+              <span className="text-white font-medium">Referência</span>
               <span className="text-white font-mono text-sm">{investmentId?.slice(-8).toUpperCase()}</span>
             </div>
           </div>
 
-          {/* Payment Instructions */}
+          {/* Instruções de Pagamento */}
           {wallet && (
             <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
-              <p className="text-slate-400 text-sm">Payment Instructions</p>
+              <p className="text-slate-400 text-sm">Instruções de Pagamento</p>
               <div className="mt-2 space-y-2">
                 <div>
-                  <span className="text-slate-400 text-xs">Currency</span>
+                  <span className="text-slate-400 text-xs">Moeda</span>
                   <p className="text-white font-medium">{wallet.currency}</p>
                 </div>
                 {wallet.type === 'crypto' && (
                   <div>
-                    <span className="text-slate-400 text-xs">Network</span>
+                    <span className="text-slate-400 text-xs">Rede</span>
                     <p className="text-white font-medium">{wallet.details?.network || 'N/A'}</p>
                   </div>
                 )}
                 <div>
-                  <span className="text-slate-400 text-xs">Address</span>
+                  <span className="text-slate-400 text-xs">Endereço</span>
                   <div className="flex items-center gap-2 mt-1">
                     <code className="text-xs text-white break-all flex-1">{wallet.address}</code>
                     <button
@@ -205,25 +205,25 @@ const PaymentProof = () => {
                 </div>
                 {wallet.type === 'pix' && (
                   <div className="mt-2 p-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-center">
-                    <p className="text-emerald-400 text-sm font-medium">PIX Key</p>
+                    <p className="text-emerald-400 text-sm font-medium">Chave PIX</p>
                     <p className="text-white text-sm break-all">{wallet.address}</p>
                   </div>
                 )}
                 {wallet.type === 'bank' && (
                   <div className="mt-2 text-xs space-y-1">
-                    <p><span className="text-slate-400">Bank:</span> {wallet.details?.bankName}</p>
-                    <p><span className="text-slate-400">Account Name:</span> {wallet.details?.accountName}</p>
-                    <p><span className="text-slate-400">Account Number:</span> {wallet.address}</p>
+                    <p><span className="text-slate-400">Banco:</span> {wallet.details?.bankName}</p>
+                    <p><span className="text-slate-400">Nome da Conta:</span> {wallet.details?.accountName}</p>
+                    <p><span className="text-slate-400">Número da Conta:</span> {wallet.address}</p>
                   </div>
                 )}
               </div>
             </div>
           )}
 
-          {/* Upload Proof */}
+          {/* Upload do Comprovante */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-slate-300 text-sm font-medium mb-2">Upload Payment Proof</label>
+              <label className="block text-slate-300 text-sm font-medium mb-2">Enviar Comprovante de Pagamento</label>
               <div className="relative">
                 <input
                   id="file-input"
@@ -244,14 +244,14 @@ const PaymentProof = () => {
               </div>
               {previewUrl && (
                 <div className="mt-2 relative">
-                  <img src={previewUrl} alt="Proof preview" className="max-h-48 rounded-lg object-contain border border-slate-600" />
+                  <img src={previewUrl} alt="Pré-visualização do comprovante" className="max-h-48 rounded-lg object-contain border border-slate-600" />
                   <p className="text-xs text-slate-400 mt-1">{proofFile?.name}</p>
                 </div>
               )}
-              <p className="text-slate-400 text-xs mt-1">Supported formats: JPG, PNG, PDF (Max 5MB)</p>
+              <p className="text-slate-400 text-xs mt-1">Formatos suportados: JPG, PNG, PDF (Máx 5MB)</p>
             </div>
 
-            {/* Upload Progress */}
+            {/* Progresso do Upload */}
             {submitting && uploadProgress > 0 && uploadProgress < 100 && (
               <div className="space-y-2">
                 <div className="w-full h-2 bg-slate-700 rounded-full overflow-hidden">
@@ -260,13 +260,13 @@ const PaymentProof = () => {
                     style={{ width: `${uploadProgress}%` }}
                   />
                 </div>
-                <p className="text-xs text-slate-400 text-center">Uploading... {uploadProgress}%</p>
+                <p className="text-xs text-slate-400 text-center">Enviando... {uploadProgress}%</p>
               </div>
             )}
 
             {uploadProgress === 100 && (
               <div className="flex items-center gap-2 text-green-500 justify-center">
-                <FaCheckCircle /> Upload complete!
+                <FaCheckCircle /> Upload concluído!
               </div>
             )}
 
@@ -277,18 +277,18 @@ const PaymentProof = () => {
             >
               {submitting ? (
                 <>
-                  <FaSpinner className="animate-spin" /> Uploading...
+                  <FaSpinner className="animate-spin" /> Enviando...
                 </>
               ) : (
                 <>
-                  <FaUpload /> Submit Proof
+                  <FaUpload /> Enviar Comprovante
                 </>
               )}
             </button>
           </form>
 
           <p className="text-yellow-500 text-xs text-center">
-            ⚠️ Ensure the proof clearly shows the transaction details. Verification may take up to 24 hours.
+            ⚠️ Certifique-se de que o comprovante mostra claramente os detalhes da transação. A verificação pode levar até 24 horas.
           </p>
         </motion.div>
       </div>

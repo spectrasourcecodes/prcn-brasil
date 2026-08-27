@@ -10,7 +10,7 @@ import Navbar from '../components/Navbar';
 import { useAuth } from '../auth/userAuth';
 import API from '../utils/axios';
 
-// Helper function to generate random placeholder URLs
+// Função auxiliar para gerar URLs de placeholder aleatórias
 const generateRandomImageUrl = (type) => {
   const placeholders = {
     idFront: [
@@ -46,7 +46,7 @@ const KYC = () => {
   const [verifiedAt, setVerifiedAt] = useState(null);
   const [kycData, setKycData] = useState(null);
 
-  // Complete form state (all fields)
+  // Estado completo do formulário (todos os campos)
   const [formData, setFormData] = useState({
     fullName: user?.fullName || '',
     email: user?.email || '',
@@ -60,13 +60,13 @@ const KYC = () => {
     idNumber: '',
   });
 
-  // Modal state
+  // Estado do modal
   const [showCodeModal, setShowCodeModal] = useState(false);
   const [codeInput, setCodeInput] = useState('');
   const [verifying, setVerifying] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // Fetch KYC status
+  // Buscar status do KYC
   useEffect(() => {
     const fetchKYCStatus = async () => {
       try {
@@ -78,7 +78,7 @@ const KYC = () => {
           setVerifiedAt(verifiedAt || null);
         }
       } catch (error) {
-        console.error('KYC status fetch error:', error);
+        console.error('Erro ao buscar status do KYC:', error);
         setKycStatus('not_submitted');
       } finally {
         setLoading(false);
@@ -95,7 +95,7 @@ const KYC = () => {
     e.preventDefault();
     
     if (!formData.fullName || !formData.email || !formData.dateOfBirth || !formData.gender) {
-      toast.error('Please fill in all required fields');
+      toast.error('Preencha todos os campos obrigatórios');
       return;
     }
 
@@ -122,13 +122,13 @@ const KYC = () => {
 
       const response = await API.post('/kyc', submitData);
       if (response.data.success) {
-        toast.success('KYC submitted successfully! Please verify your code.');
+        toast.success('KYC enviado com sucesso! Por favor, verifique seu código.');
         setKycStatus('pending');
         setShowCodeModal(true);
       }
     } catch (error) {
-      console.error('KYC submission error:', error);
-      toast.error(error.response?.data?.message || 'Failed to submit KYC');
+      console.error('Erro ao enviar KYC:', error);
+      toast.error(error.response?.data?.message || 'Falha ao enviar KYC');
     } finally {
       setSubmitting(false);
     }
@@ -136,7 +136,7 @@ const KYC = () => {
 
   const handleVerifyCode = async () => {
     if (!codeInput) {
-      toast.error('Please enter the verification code');
+      toast.error('Por favor, insira o código de verificação');
       return;
     }
 
@@ -149,12 +149,12 @@ const KYC = () => {
         }
         setKycStatus('verified');
         setShowCodeModal(false);
-        toast.success('KYC verification successful!');
+        toast.success('Verificação KYC concluída com sucesso!');
         navigate('/withdraw');
       }
     } catch (error) {
-      console.error('KYC verification error:', error);
-      toast.error(error.response?.data?.message || 'Invalid verification code');
+      console.error('Erro na verificação do KYC:', error);
+      toast.error(error.response?.data?.message || 'Código de verificação inválido');
       setCodeInput('');
     } finally {
       setVerifying(false);
@@ -172,7 +172,7 @@ const KYC = () => {
     );
   }
 
-  // --- Main content based on status ---
+  // --- Conteúdo principal baseado no status ---
   let mainContent;
 
   if (kycStatus === 'verified') {
@@ -186,20 +186,20 @@ const KYC = () => {
           <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
             <FaCheckCircle className="w-10 h-10 text-green-500" />
           </div>
-          <h2 className="text-2xl font-bold text-white mb-2">KYC Verified</h2>
+          <h2 className="text-2xl font-bold text-white mb-2">KYC Verificado</h2>
           <p className="text-slate-400">
-            Your identity has been verified. You now have full access to all features.
+            Sua identidade foi verificada. Agora você tem acesso completo a todos os recursos.
           </p>
           <div className="mt-4 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
             <p className="text-green-400 text-sm">
-              ✅ You can now deposit, withdraw, and invest without restrictions.
+              ✅ Agora você pode depositar, sacar e investir sem restrições.
             </p>
           </div>
           <button
             onClick={() => navigate('/dashboard')}
             className="mt-4 px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:opacity-90 transition"
           >
-            Go to Dashboard
+            Ir para o Painel
           </button>
         </motion.div>
       </div>
@@ -215,43 +215,43 @@ const KYC = () => {
           <div className="w-20 h-20 rounded-full bg-yellow-500/20 flex items-center justify-center mx-auto mb-4">
             <FaSpinner className="w-10 h-10 text-yellow-500 animate-spin" />
           </div>
-          <h2 className="text-2xl font-bold text-white mb-2">KYC Under Review</h2>
+          <h2 className="text-2xl font-bold text-white mb-2">KYC em Análise</h2>
           <p className="text-slate-400">
-            Your KYC application has been submitted and is currently being reviewed.
+            Sua solicitação de KYC foi enviada e está sendo analisada.
           </p>
           <p className="text-slate-500 text-sm mt-2">
-            If you have received a verification code, you can enter it now.
+            Se você recebeu um código de verificação, pode inseri-lo agora.
           </p>
           <button
             onClick={openCodeModal}
             className="mt-4 px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:opacity-90 transition"
           >
-            Enter Verification Code
+            Inserir Código de Verificação
           </button>
           <button
             onClick={() => navigate('/dashboard')}
             className="mt-2 ml-2 px-6 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition"
           >
-            Go to Dashboard
+            Ir para o Painel
           </button>
         </motion.div>
       </div>
     );
   } else {
-    // not_submitted or rejected – show complete form
+    // not_submitted ou rejected – exibe o formulário completo
     const isRejected = kycStatus === 'rejected';
     mainContent = (
       <div className="p-4 sm:p-6 max-w-2xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">KYC Verification</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">Verificação KYC</h1>
           <p className="text-slate-400 mt-1">
             {isRejected
-              ? 'Your previous KYC was rejected. Please update your information and resubmit.'
-              : 'Complete your identity verification'}
+              ? 'Seu KYC anterior foi rejeitado. Atualize suas informações e envie novamente.'
+              : 'Complete a verificação da sua identidade'}
           </p>
           {isRejected && (
             <p className="text-red-500 text-sm mt-2">
-              ❌ Your KYC was rejected. Please correct the information below.
+              ❌ Seu KYC foi rejeitado. Corrija as informações abaixo.
             </p>
           )}
         </div>
@@ -262,11 +262,11 @@ const KYC = () => {
           className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-6 border border-slate-700"
         >
           <form onSubmit={handleSubmit} className="space-y-4">
-            <h3 className="text-lg font-bold text-white mb-4">Personal Information</h3>
+            <h3 className="text-lg font-bold text-white mb-4">Informações Pessoais</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-slate-300 text-sm font-medium mb-2">Full Name *</label>
+                <label className="block text-slate-300 text-sm font-medium mb-2">Nome Completo *</label>
                 <div className="relative">
                   <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
                   <input
@@ -274,7 +274,7 @@ const KYC = () => {
                     name="fullName"
                     value={formData.fullName}
                     onChange={handleChange}
-                    placeholder="John Doe"
+                    placeholder="João Silva"
                     className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-10 pr-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
                     required
                   />
@@ -282,7 +282,7 @@ const KYC = () => {
               </div>
 
               <div>
-                <label className="block text-slate-300 text-sm font-medium mb-2">Email *</label>
+                <label className="block text-slate-300 text-sm font-medium mb-2">E-mail *</label>
                 <div className="relative">
                   <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
                   <input
@@ -290,7 +290,7 @@ const KYC = () => {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    placeholder="john@example.com"
+                    placeholder="joao@exemplo.com"
                     className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-10 pr-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
                     required
                   />
@@ -300,7 +300,7 @@ const KYC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-slate-300 text-sm font-medium mb-2">Phone Number</label>
+                <label className="block text-slate-300 text-sm font-medium mb-2">Telefone</label>
                 <div className="relative">
                   <FaPhone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
                   <input
@@ -308,14 +308,14 @@ const KYC = () => {
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    placeholder="+1 234 567 8900"
+                    placeholder="+55 11 99999-9999"
                     className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-10 pr-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-slate-300 text-sm font-medium mb-2">Date of Birth *</label>
+                <label className="block text-slate-300 text-sm font-medium mb-2">Data de Nascimento *</label>
                 <div className="relative">
                   <FaCalendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
                   <input
@@ -332,7 +332,7 @@ const KYC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-slate-300 text-sm font-medium mb-2">Gender *</label>
+                <label className="block text-slate-300 text-sm font-medium mb-2">Gênero *</label>
                 <select
                   name="gender"
                   value={formData.gender}
@@ -340,15 +340,15 @@ const KYC = () => {
                   className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 transition"
                   required
                 >
-                  <option value="">Select Gender</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
+                  <option value="">Selecione o Gênero</option>
+                  <option value="male">Masculino</option>
+                  <option value="female">Feminino</option>
+                  <option value="other">Outro</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-slate-300 text-sm font-medium mb-2">Nationality *</label>
+                <label className="block text-slate-300 text-sm font-medium mb-2">Nacionalidade *</label>
                 <div className="relative">
                   <FaGlobe className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
                   <input
@@ -356,7 +356,7 @@ const KYC = () => {
                     name="nationality"
                     value={formData.nationality}
                     onChange={handleChange}
-                    placeholder="American"
+                    placeholder="Brasileira"
                     className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-10 pr-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
                     required
                   />
@@ -365,7 +365,7 @@ const KYC = () => {
             </div>
 
             <div>
-              <label className="block text-slate-300 text-sm font-medium mb-2">Address *</label>
+              <label className="block text-slate-300 text-sm font-medium mb-2">Endereço *</label>
               <div className="relative">
                 <FaMapMarkerAlt className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
                 <input
@@ -373,7 +373,7 @@ const KYC = () => {
                   name="address"
                   value={formData.address}
                   onChange={handleChange}
-                  placeholder="123 Main St, City, Country"
+                  placeholder="Rua Exemplo, 123, Cidade, País"
                   className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-10 pr-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
                   required
                 />
@@ -381,7 +381,7 @@ const KYC = () => {
             </div>
 
             <div>
-              <label className="block text-slate-300 text-sm font-medium mb-2">Occupation</label>
+              <label className="block text-slate-300 text-sm font-medium mb-2">Profissão</label>
               <div className="relative">
                 <FaBriefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
                 <input
@@ -389,7 +389,7 @@ const KYC = () => {
                   name="occupation"
                   value={formData.occupation}
                   onChange={handleChange}
-                  placeholder="Software Engineer"
+                  placeholder="Engenheiro de Software"
                   className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-10 pr-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
                 />
               </div>
@@ -397,11 +397,11 @@ const KYC = () => {
 
             <hr className="border-slate-700 my-4" />
 
-            <h3 className="text-lg font-bold text-white mb-4">Government ID</h3>
+            <h3 className="text-lg font-bold text-white mb-4">Documento de Identificação</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-slate-300 text-sm font-medium mb-2">ID Type *</label>
+                <label className="block text-slate-300 text-sm font-medium mb-2">Tipo de Documento *</label>
                 <select
                   name="idType"
                   value={formData.idType}
@@ -409,14 +409,14 @@ const KYC = () => {
                   className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 transition"
                   required
                 >
-                  <option value="passport">Passport</option>
-                  <option value="driver_license">Driver License</option>
-                  <option value="national_id">National ID</option>
+                  <option value="passport">Passaporte</option>
+                  <option value="driver_license">Carteira de Motorista</option>
+                  <option value="national_id">RG / Identidade Nacional</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-slate-300 text-sm font-medium mb-2">ID Number *</label>
+                <label className="block text-slate-300 text-sm font-medium mb-2">Número do Documento *</label>
                 <div className="relative">
                   <FaIdCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
                   <input
@@ -437,11 +437,11 @@ const KYC = () => {
               disabled={submitting}
               className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              {submitting ? <FaSpinner className="animate-spin" /> : 'Submit KYC'}
+              {submitting ? <FaSpinner className="animate-spin" /> : 'Enviar KYC'}
             </button>
 
             <p className="text-xs text-slate-500 text-center">
-              * Required fields. Your information is secure and will not be shared.
+              * Campos obrigatórios. Suas informações são seguras e não serão compartilhadas.
             </p>
           </form>
         </motion.div>
@@ -456,7 +456,7 @@ const KYC = () => {
         {mainContent}
       </div>
 
-      {/* Verification Code Modal – always rendered but conditionally shown */}
+      {/* Modal de Código de Verificação – sempre renderizado, mas exibido condicionalmente */}
       <AnimatePresence>
         {showCodeModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
@@ -467,7 +467,7 @@ const KYC = () => {
               className="bg-slate-800/95 backdrop-blur-xl rounded-2xl max-w-md w-full border border-slate-700 shadow-2xl p-6"
             >
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-white">Enter Verification Code</h2>
+                <h2 className="text-xl font-bold text-white">Inserir Código de Verificação</h2>
                 <button
                   onClick={closeCodeModal}
                   className="p-2 hover:bg-slate-700 rounded-lg transition"
@@ -477,7 +477,7 @@ const KYC = () => {
               </div>
 
               <p className="text-slate-400 text-sm mb-4">
-                Enter the 6-digit KYC code you received from support.
+                Digite o código KYC de 6 dígitos que você recebeu do suporte.
               </p>
 
               <div>
@@ -485,7 +485,7 @@ const KYC = () => {
                   type="text"
                   value={codeInput}
                   onChange={(e) => setCodeInput(e.target.value)}
-                  placeholder="Enter 6-digit code"
+                  placeholder="Digite o código de 6 dígitos"
                   className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white text-center text-2xl tracking-widest focus:outline-none focus:border-blue-500 transition"
                   maxLength="6"
                   autoFocus
@@ -497,14 +497,14 @@ const KYC = () => {
                   onClick={closeCodeModal}
                   className="flex-1 py-2 rounded-lg bg-slate-700 text-white hover:bg-slate-600 transition"
                 >
-                  Cancel
+                  Cancelar
                 </button>
                 <button
                   onClick={handleVerifyCode}
                   disabled={verifying}
                   className="flex-1 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  {verifying ? <FaSpinner className="animate-spin" /> : 'Verify'}
+                  {verifying ? <FaSpinner className="animate-spin" /> : 'Verificar'}
                 </button>
               </div>
             </motion.div>

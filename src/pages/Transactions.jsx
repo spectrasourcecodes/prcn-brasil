@@ -24,7 +24,7 @@ const Transactions = () => {
       setTransactions(response.data);
       setPagination(response.pagination);
     } catch (error) {
-      toast.error('Failed to load transactions');
+      toast.error('Falha ao carregar transações');
     } finally {
       setLoading(false);
     }
@@ -52,8 +52,8 @@ const Transactions = () => {
       <Navbar />
       <div className="p-4 sm:p-6">
         <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">Transactions</h1>
-          <p className="text-slate-400 mt-1">View your transaction history</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">Transações</h1>
+          <p className="text-slate-400 mt-1">Visualize seu histórico de transações</p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
@@ -61,7 +61,7 @@ const Transactions = () => {
             <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
             <input
               type="text"
-              placeholder="Search transactions..."
+              placeholder="Buscar transações..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-10 pr-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
@@ -74,12 +74,12 @@ const Transactions = () => {
               onChange={(e) => setFilterType(e.target.value)}
               className="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
             >
-              <option value="all">All Types</option>
-              <option value="deposit">Deposits</option>
-              <option value="withdrawal">Withdrawals</option>
-              <option value="investment">Investments</option>
-              <option value="profit">Profits</option>
-              <option value="referral">Referrals</option>
+              <option value="all">Todos os Tipos</option>
+              <option value="deposit">Depósitos</option>
+              <option value="withdrawal">Saques</option>
+              <option value="investment">Investimentos</option>
+              <option value="profit">Lucros</option>
+              <option value="referral">Indicações</option>
             </select>
           </div>
         </div>
@@ -92,7 +92,7 @@ const Transactions = () => {
 
         {filteredTransactions.length === 0 && (
           <div className="text-center py-12 text-slate-400">
-            No transactions found.
+            Nenhuma transação encontrada.
           </div>
         )}
 
@@ -103,17 +103,17 @@ const Transactions = () => {
               disabled={pagination.page <= 1}
               className="px-4 py-2 bg-slate-800 rounded-lg text-white disabled:opacity-50"
             >
-              Previous
+              Anterior
             </button>
             <span className="px-4 py-2 text-slate-400">
-              Page {pagination.page} of {pagination.pages}
+              Página {pagination.page} de {pagination.pages}
             </span>
             <button
               onClick={() => handlePageChange(pagination.page + 1)}
               disabled={pagination.page >= pagination.pages}
               className="px-4 py-2 bg-slate-800 rounded-lg text-white disabled:opacity-50"
             >
-              Next
+              Próxima
             </button>
           </div>
         )}

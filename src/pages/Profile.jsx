@@ -50,8 +50,8 @@ const Profile = () => {
       setProfile(mapped);
       setFormData(mapped);
     } catch (error) {
-      console.error('Profile fetch error:', error);
-      toast.error(error.response?.data?.message || 'Failed to load profile');
+      console.error('Erro ao buscar perfil:', error);
+      toast.error(error.response?.data?.message || 'Falha ao carregar perfil');
     } finally {
       setIsLoading(false);
     }
@@ -75,10 +75,10 @@ const Profile = () => {
       setProfile(formData);
       if (updateUser) updateUser(formData);
       setIsEditing(false);
-      toast.success('Profile updated successfully!');
+      toast.success('Perfil atualizado com sucesso!');
     } catch (error) {
-      console.error('Profile update error:', error);
-      toast.error(error.response?.data?.message || 'Failed to update profile');
+      console.error('Erro ao atualizar perfil:', error);
+      toast.error(error.response?.data?.message || 'Falha ao atualizar perfil');
     } finally {
       setIsSaving(false);
     }
@@ -90,12 +90,12 @@ const Profile = () => {
   };
 
   const handleLogout = () => {
-    if (window.confirm('Are you sure you want to logout?')) {
+    if (window.confirm('Tem certeza que deseja sair?')) {
       logout();
-      // Clear KYC verification flag if exists
+      // Remove a flag de verificação KYC se existir
       localStorage.removeItem('kyc_verified');
       navigate('/login');
-      toast.success('Logged out successfully');
+      toast.success('Saiu com sucesso');
     }
   };
 
@@ -107,7 +107,7 @@ const Profile = () => {
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <div className="w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-slate-400">Loading profile...</p>
+              <p className="text-slate-400">Carregando perfil...</p>
             </div>
           </div>
         </main>
@@ -121,48 +121,48 @@ const Profile = () => {
       
       <main className="p-4 sm:p-6">
         <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">My Profile</h1>
-          <p className="text-slate-400 mt-1">Manage your personal information</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">Meu Perfil</h1>
+          <p className="text-slate-400 mt-1">Gerencie suas informações pessoais</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Profile Card */}
+          {/* Card do Perfil */}
           <div className="lg:col-span-1">
             <div className="bg-slate-800 rounded-2xl p-6 text-center">
               <div className="relative inline-block">
                 <img
                   src={profile.avatar || 'https://www.magnific.com/free-photos-vectors/user-profile'}
-                  alt={profile.fullName || 'User'}
+                  alt={profile.fullName || 'Usuário'}
                   className="w-32 h-32 rounded-full mx-auto border-4 border-blue-500 object-cover"
                 />
                 <button className="absolute bottom-0 right-0 bg-blue-600 p-2 rounded-full hover:bg-blue-700 transition">
                   <FaCamera className="text-white text-sm" />
                 </button>
               </div>
-              <h2 className="text-xl font-bold text-white mt-4">{profile.fullName || 'User Name'}</h2>
-              <p className="text-slate-400">Member since {profile.createdAt ? new Date(profile.createdAt).getFullYear() : 'N/A'}</p>
+              <h2 className="text-xl font-bold text-white mt-4">{profile.fullName || 'Nome do Usuário'}</h2>
+              <p className="text-slate-400">Membro desde {profile.createdAt ? new Date(profile.createdAt).getFullYear() : 'N/A'}</p>
               <div className="mt-4 flex justify-center gap-2">
                 {profile.isVerified && (
-                  <span className="px-2 py-1 bg-green-500/20 text-green-500 rounded-lg text-xs">Verified</span>
+                  <span className="px-2 py-1 bg-green-500/20 text-green-500 rounded-lg text-xs">Verificado</span>
                 )}
                 {profile.twoFactorEnabled && (
-                  <span className="px-2 py-1 bg-blue-500/20 text-blue-500 rounded-lg text-xs">2FA Enabled</span>
+                  <span className="px-2 py-1 bg-blue-500/20 text-blue-500 rounded-lg text-xs">2FA Ativado</span>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Profile Form */}
+          {/* Formulário do Perfil */}
           <div className="lg:col-span-2">
             <div className="bg-slate-800 rounded-2xl p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold text-white">Personal Information</h2>
+                <h2 className="text-xl font-bold text-white">Informações Pessoais</h2>
                 {!isEditing ? (
                   <button
                     onClick={() => setIsEditing(true)}
                     className="px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700 transition"
                   >
-                    Edit Profile
+                    Editar Perfil
                   </button>
                 ) : (
                   <div className="flex gap-2">
@@ -171,7 +171,7 @@ const Profile = () => {
                       disabled={isSaving}
                       className="px-4 py-2 bg-slate-600 rounded-lg hover:bg-slate-700 transition flex items-center gap-2"
                     >
-                      <FaTimes /> Cancel
+                      <FaTimes /> Cancelar
                     </button>
                     <button
                       onClick={handleSave}
@@ -179,7 +179,7 @@ const Profile = () => {
                       className="px-4 py-2 bg-green-600 rounded-lg hover:bg-green-700 transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isSaving ? <FaSpinner className="animate-spin" /> : <FaSave />}
-                      {isSaving ? 'Saving...' : 'Save Changes'}
+                      {isSaving ? 'Salvando...' : 'Salvar Alterações'}
                     </button>
                   </div>
                 )}
@@ -189,7 +189,7 @@ const Profile = () => {
                 <div className="flex items-center gap-3 p-3 bg-slate-700/50 rounded-lg">
                   <FaUser className="text-blue-400" />
                   <div className="flex-1">
-                    <p className="text-xs text-slate-400">Full Name</p>
+                    <p className="text-xs text-slate-400">Nome Completo</p>
                     {isEditing ? (
                       <input
                         type="text"
@@ -199,7 +199,7 @@ const Profile = () => {
                         className="bg-slate-600 rounded px-2 py-1 text-white w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     ) : (
-                      <p className="text-white">{profile.fullName || 'Not provided'}</p>
+                      <p className="text-white">{profile.fullName || 'Não informado'}</p>
                     )}
                   </div>
                 </div>
@@ -207,7 +207,7 @@ const Profile = () => {
                 <div className="flex items-center gap-3 p-3 bg-slate-700/50 rounded-lg">
                   <FaEnvelope className="text-blue-400" />
                   <div className="flex-1">
-                    <p className="text-xs text-slate-400">Email Address</p>
+                    <p className="text-xs text-slate-400">E-mail</p>
                     {isEditing ? (
                       <input
                         type="email"
@@ -217,7 +217,7 @@ const Profile = () => {
                         className="bg-slate-600 rounded px-2 py-1 text-white w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     ) : (
-                      <p className="text-white">{profile.email || 'Not provided'}</p>
+                      <p className="text-white">{profile.email || 'Não informado'}</p>
                     )}
                   </div>
                 </div>
@@ -225,18 +225,18 @@ const Profile = () => {
                 <div className="flex items-center gap-3 p-3 bg-slate-700/50 rounded-lg">
                   <FaPhone className="text-blue-400" />
                   <div className="flex-1">
-                    <p className="text-xs text-slate-400">Phone Number</p>
+                    <p className="text-xs text-slate-400">Telefone</p>
                     {isEditing ? (
                       <input
                         type="tel"
                         name="phone"
                         value={formData.phone || ''}
                         onChange={handleChange}
-                        placeholder="+1234567890"
+                        placeholder="+55 11 99999-9999"
                         className="bg-slate-600 rounded px-2 py-1 text-white w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     ) : (
-                      <p className="text-white">{profile.phone || 'Not provided'}</p>
+                      <p className="text-white">{profile.phone || 'Não informado'}</p>
                     )}
                   </div>
                 </div>
@@ -244,7 +244,7 @@ const Profile = () => {
                 <div className="flex items-center gap-3 p-3 bg-slate-700/50 rounded-lg">
                   <FaGlobe className="text-blue-400" />
                   <div className="flex-1">
-                    <p className="text-xs text-slate-400">Country</p>
+                    <p className="text-xs text-slate-400">País</p>
                     {isEditing ? (
                       <select
                         name="country"
@@ -252,7 +252,7 @@ const Profile = () => {
                         onChange={handleChange}
                         className="bg-slate-600 rounded px-2 py-1 text-white w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
-                        <option value="">Select Country</option>
+                        <option value="">Selecione o País</option>
                         {country.map((c) => (
                           <option key={c.code} value={c.name}>
                             {c.flag} {c.name}
@@ -260,7 +260,7 @@ const Profile = () => {
                         ))}
                       </select>
                     ) : (
-                      <p className="text-white">{profile.country || 'Not selected'}</p>
+                      <p className="text-white">{profile.country || 'Não selecionado'}</p>
                     )}
                   </div>
                 </div>
@@ -268,7 +268,7 @@ const Profile = () => {
                 <div className="flex items-center gap-3 p-3 bg-slate-700/50 rounded-lg">
                   <FaDollarSign className="text-blue-400" />
                   <div className="flex-1">
-                    <p className="text-xs text-slate-400">Currency</p>
+                    <p className="text-xs text-slate-400">Moeda</p>
                     {isEditing ? (
                       <select
                         name="currency"
@@ -276,13 +276,14 @@ const Profile = () => {
                         onChange={handleChange}
                         className="bg-slate-600 rounded px-2 py-1 text-white w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
-                        <option value="USD">USD - US Dollar</option>
+                        <option value="USD">USD - Dólar Americano</option>
                         <option value="EUR">EUR - Euro</option>
-                        <option value="GBP">GBP - British Pound</option>
-                        <option value="CAD">CAD - Canadian Dollar</option>
-                        <option value="AUD">AUD - Australian Dollar</option>
-                        <option value="JPY">JPY - Japanese Yen</option>
-                        <option value="CNY">CNY - Chinese Yuan</option>
+                        <option value="GBP">GBP - Libra Esterlina</option>
+                        <option value="CAD">CAD - Dólar Canadense</option>
+                        <option value="AUD">AUD - Dólar Australiano</option>
+                        <option value="JPY">JPY - Iene Japonês</option>
+                        <option value="CNY">CNY - Yuan Chinês</option>
+                        <option value="BRL">BRL - Real Brasileiro</option>
                       </select>
                     ) : (
                       <p className="text-white">{profile.currency || 'USD'}</p>
@@ -295,29 +296,29 @@ const Profile = () => {
                 <>
                   <div className="mt-6 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
                     <p className="text-blue-400 text-xs text-center">
-                      ℹ️ Click "Edit Profile" to update your personal information
+                      ℹ️ Clique em "Editar Perfil" para atualizar suas informações pessoais
                     </p>
                   </div>
 
-                  {/* Logout & Settings Buttons */}
+                  {/* Botões de Logout e Configurações */}
                   <div className="mt-6 pt-4 border-t border-slate-700 flex flex-col sm:flex-row gap-3">
                     <button
                       onClick={() => navigate('/security')}
                       className="flex items-center justify-center gap-2 px-4 py-2 bg-slate-700 rounded-lg hover:bg-slate-600 transition text-white"
                     >
-                      <LockIcon /> Security
+                      <LockIcon /> Segurança
                     </button>
                     <button
                       onClick={() => navigate('/settings')}
                       className="flex items-center justify-center gap-2 px-4 py-2 bg-slate-700 rounded-lg hover:bg-slate-600 transition text-white"
                     >
-                      <FaCog /> Settings
+                      <FaCog /> Configurações
                     </button>
                     <button
                       onClick={handleLogout}
                       className="flex items-center justify-center gap-2 px-4 py-2 bg-red-600/20 text-red-400 rounded-lg hover:bg-red-600/30 transition"
                     >
-                      <FaSignOutAlt /> Logout
+                      <FaSignOutAlt /> Sair
                     </button>
                   </div>
                 </>

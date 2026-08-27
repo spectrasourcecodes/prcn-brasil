@@ -25,7 +25,7 @@ const Header = () => (
           </div>
           <div className="flex items-center">
             <i className="fab fa-telegram text-blue-400 mr-2"></i>
-            <span className="text-slate-300">24/7 Support</span>
+            <span className="text-slate-300">Suporte 24/7</span>
           </div>
         </div>
         <GoogleTranslate />
@@ -43,19 +43,19 @@ const NavbarHome = () => (
         </Link>
 
         <div className="hidden lg:flex items-center space-x-8">
-          <a href="#about" className="text-slate-300 hover:text-white transition">About</a>
-          <a href="#plans" className="text-slate-300 hover:text-white transition">Plans</a>
-          <a href="#services" className="text-slate-300 hover:text-white transition">Services</a>
-          <Link to="/market" className="text-slate-300 hover:text-white transition">Market</Link>
-          <Link to="/payouts" className="text-slate-300 hover:text-white transition">Live Payouts</Link>
+          <a href="#about" className="text-slate-300 hover:text-white transition">Sobre</a>
+          <a href="#plans" className="text-slate-300 hover:text-white transition">Planos</a>
+          <a href="#services" className="text-slate-300 hover:text-white transition">Serviços</a>
+          <Link to="/market" className="text-slate-300 hover:text-white transition">Mercado</Link>
+          <Link to="/payouts" className="text-slate-300 hover:text-white transition">Pagamentos ao Vivo</Link>
         </div>
 
         <div className="hidden lg:flex items-center space-x-4">
           <Link to="/dashboard" className="px-4 py-2 rounded-lg bg-slate-700 text-white hover:bg-slate-600 transition">
-            Dashboard
+            Painel
           </Link>
           <Link to="/register" className="px-6 py-2 rounded-lg gradient-bg text-white font-medium hover:opacity-90 transition">
-            Open Account
+            Abrir Conta
           </Link>
         </div>
       </div>
@@ -81,17 +81,17 @@ const Hero = () => (
           className="lg:w-1/2 mb-12 lg:mb-0"
         >
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
-            Trade Forex & Crypto with <span className="gradient-text">Professional Excellence</span>
+            Negocie Forex e Cripto com <span className="gradient-text">Excelência Profissional</span>
           </h1>
           <p className="text-lg text-slate-300 mb-8 max-w-2xl">
-            Join 25,000+ traders who trust us with their investments. Experience premium trading conditions, instant withdrawals, and 24/7 dedicated support.
+            Junte-se a mais de 25.000 traders que confiam seus investimentos a nós. Desfrute de condições premium de negociação, saques instantâneos e suporte dedicado 24/7.
           </p>
           <div className="flex flex-wrap gap-4">
             <Link to="/register" className="px-8 py-4 rounded-lg gradient-bg text-white font-bold text-lg hover:opacity-90 transition transform hover:scale-105">
-              Get Started
+              Começar Agora
             </Link>
             <Link to="/plans" className="px-8 py-4 rounded-lg bg-slate-700 text-white font-bold text-lg hover:bg-slate-600 transition transform hover:scale-105">
-              View Plans
+              Ver Planos
             </Link>
           </div>
         </motion.div>
@@ -107,8 +107,8 @@ const Hero = () => (
               <div className="bg-slate-800/80 rounded-xl p-6">
                 <div className="flex justify-between items-center mb-6">
                   <div>
-                    <h3 className="text-xl font-bold text-white">Live Market Data</h3>
-                    <p className="text-slate-400">Real-time updates</p>
+                    <h3 className="text-xl font-bold text-white">Dados do Mercado ao Vivo</h3>
+                    <p className="text-slate-400">Atualizações em tempo real</p>
                   </div>
                   <div className="flex space-x-2">
                     <div className="w-3 h-3 bg-red-400 rounded-full"></div>
@@ -140,7 +140,7 @@ const Hero = () => (
                     <div className="text-2xl font-bold text-white mb-2">
                       <AnimatedCounter end={42.7} suffix="%" />
                     </div>
-                    <div className="text-slate-400">Average Portfolio Growth</div>
+                    <div className="text-slate-400">Crescimento Médio da Carteira</div>
                   </div>
                 </div>
               </div>
@@ -168,7 +168,7 @@ const TradingWidget = () => {
       "colorTheme": "dark",
       "isTransparent": false,
       "displayMode": "adaptive",
-      "locale": "en"
+      "locale": "pt"
     });
     document.getElementById('tradingview-widget')?.appendChild(script);
   }, []);
@@ -184,10 +184,10 @@ const TradingWidget = () => {
 
 const Stats = () => {
   const stats = [
-    { value: 3412, label: "Active Trades", suffix: "+" },
-    { value: 8725, label: "Online Members", suffix: "+" },
-    { value: 12545, label: "Registered Members", suffix: "+" },
-    { value: 554285, label: "Total Payouts", prefix: "$" }
+    { value: 3412, label: "Negociações Ativas", suffix: "+" },
+    { value: 8725, label: "Membros Online", suffix: "+" },
+    { value: 12545, label: "Membros Registrados", suffix: "+" },
+    { value: 554285, label: "Total de Pagamentos", prefix: "$" }
   ];
 
   return (
@@ -219,21 +219,21 @@ const Features = () => {
   const features = [
     {
       icon: FaShieldAlt,
-      title: "Best Security",
-      description: "Bank-level security with 2FA, cold storage, and DDoS protection",
-      points: ["Bank-level security", "2FA authentication", "Cold storage wallets"]
+      title: "Melhor Segurança",
+      description: "Segurança de nível bancário com 2FA, armazenamento frio e proteção DDoS",
+      points: ["Segurança de nível bancário", "Autenticação 2FA", "Carteiras com armazenamento frio"]
     },
     {
       icon: FaChartLine,
-      title: "Range of APIs",
-      description: "Advanced charting tools with custom indicators and real-time data",
-      points: ["Real-time market data", "Advanced charting tools", "Custom indicators"]
+      title: "Ampla Gama de APIs",
+      description: "Ferramentas de gráficos avançadas com indicadores personalizados e dados em tempo real",
+      points: ["Dados de mercado em tempo real", "Ferramentas de gráficos avançadas", "Indicadores personalizados"]
     },
     {
       icon: FaBolt,
-      title: "Instant Effect",
-      description: "Real-time operations with instant deposits and fast withdrawals",
-      points: ["Instant deposits", "Fast withdrawals", "Real-time execution"]
+      title: "Efeito Instantâneo",
+      description: "Operações em tempo real com depósitos instantâneos e saques rápidos",
+      points: ["Depósitos instantâneos", "Saques rápidos", "Execução em tempo real"]
     }
   ];
 
@@ -241,10 +241,10 @@ const Features = () => {
     <section className="py-20" id="about">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <span className="text-blue-400 font-bold uppercase tracking-wider">Why Choose Us</span>
-          <h2 className="text-3xl md:text-4xl font-bold mt-4 mb-6">Professional Trading Platform</h2>
+          <span className="text-blue-400 font-bold uppercase tracking-wider">Por que nos escolher?</span>
+          <h2 className="text-3xl md:text-4xl font-bold mt-4 mb-6">Plataforma de Negociação Profissional</h2>
           <p className="text-slate-400 max-w-2xl mx-auto">
-            Trade on the largest selection of assets in the industry. From forex pairs and commodities to crypto and indices.
+            Negocie na maior seleção de ativos do setor. De pares de forex e commodities a criptomoedas e índices.
           </p>
         </div>
 
@@ -283,9 +283,9 @@ const InvestmentPlans = () => (
   <section className="py-20 bg-slate-900" id="plans">
     <div className="container mx-auto px-4">
       <div className="text-center mb-16">
-        <span className="text-blue-400 font-bold uppercase tracking-wider">Investment Plans</span>
-        <h2 className="text-3xl md:text-4xl font-bold mt-4 mb-6">Grow Your Wealth With Us</h2>
-        <p className="text-slate-400 max-w-2xl mx-auto">Choose the plan that fits your investment goals and start earning today</p>
+        <span className="text-blue-400 font-bold uppercase tracking-wider">Planos de Investimento</span>
+        <h2 className="text-3xl md:text-4xl font-bold mt-4 mb-6">Aumente seu Patrimônio Conosco</h2>
+        <p className="text-slate-400 max-w-2xl mx-auto">Escolha o plano que se adapta aos seus objetivos de investimento e comece a ganhar hoje</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
@@ -302,24 +302,24 @@ const InvestmentPlans = () => (
               <div className="text-center mb-6">
                 <h3 className={`text-xl font-bold ${plan.colorClass} mb-2`}>{plan.name}</h3>
                 <div className="text-3xl font-bold text-white mb-1">${plan.minAmount.toLocaleString()}</div>
-                <div className="text-slate-400 text-sm">Min. Investment</div>
+                <div className="text-slate-400 text-sm">Invest. Mínimo</div>
               </div>
               <ul className="space-y-3 mb-8">
                 <li className="flex justify-between">
-                  <span className="text-slate-400">Duration</span>
-                  <span className="text-white font-semibold">{plan.duration} days</span>
+                  <span className="text-slate-400">Duração</span>
+                  <span className="text-white font-semibold">{plan.duration} dias</span>
                 </li>
                 <li className="flex justify-between">
                   <span className="text-slate-400">ROI</span>
                   <span className="text-white font-semibold">{plan.roi}%</span>
                 </li>
                 <li className="flex justify-between">
-                  <span className="text-slate-400">Bonus</span>
+                  <span className="text-slate-400">Bônus</span>
                   <span className="text-white font-semibold">{plan.bonus}%</span>
                 </li>
               </ul>
               <Link to="/register" className="block w-full py-3 px-4 text-center rounded-lg gradient-bg text-white font-bold hover:opacity-90 transition">
-                Invest Now
+                Investir Agora
               </Link>
             </div>
           </motion.div>
@@ -331,23 +331,23 @@ const InvestmentPlans = () => (
 
 const Services = () => {
   const services = [
-    { icon: FaChartLine, title: "200x Leverage Trading", description: "Ultra fast execution with tight spreads" },
-    { icon: FaEye, title: "Fully Transparent", description: "Real-time detailed data monitoring" },
-    { icon: FaTag, title: "Low Fees", description: "Minimal transaction fees" },
-    { icon: FaShieldAlt, title: "Security & Stability", description: "Latest security measures" },
-    { icon: FaHeadset, title: "24/7 Support", description: "Multi-channel customer support" },
-    { icon: FaPercent, title: "Competitive Commissions", description: "Special conditions for high-volume traders" },
-    { icon: FaCoins, title: "Crypto & Forex", description: "Trade major cryptocurrencies and forex pairs" },
-    { icon: FaMicrochip, title: "Advanced Technology", description: "Solid technological base with unique features" }
+    { icon: FaChartLine, title: "Negociação com Alavancagem 200x", description: "Execução ultrarrápida com spreads reduzidos" },
+    { icon: FaEye, title: "Totalmente Transparente", description: "Monitoramento detalhado de dados em tempo real" },
+    { icon: FaTag, title: "Taxas Baixas", description: "Taxas de transação mínimas" },
+    { icon: FaShieldAlt, title: "Segurança e Estabilidade", description: "Medidas de segurança de ponta" },
+    { icon: FaHeadset, title: "Suporte 24/7", description: "Suporte ao cliente multicanal" },
+    { icon: FaPercent, title: "Comissões Competitivas", description: "Condições especiais para traders de alto volume" },
+    { icon: FaCoins, title: "Cripto e Forex", description: "Negocie as principais criptomoedas e pares de forex" },
+    { icon: FaMicrochip, title: "Tecnologia Avançada", description: "Base tecnológica sólida com recursos exclusivos" }
   ];
 
   return (
     <section className="py-20 bg-slate-900" id="services">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <span className="text-blue-400 font-bold uppercase tracking-wider">Our Services</span>
-          <h2 className="text-3xl md:text-4xl font-bold mt-4 mb-6">Comprehensive Trading Solutions</h2>
-          <p className="text-slate-400 max-w-2xl mx-auto">Experience the benefits of trading with industry experts</p>
+          <span className="text-blue-400 font-bold uppercase tracking-wider">Nossos Serviços</span>
+          <h2 className="text-3xl md:text-4xl font-bold mt-4 mb-6">Soluções de Negociação Abrangentes</h2>
+          <p className="text-slate-400 max-w-2xl mx-auto">Experimente os benefícios de negociar com especialistas do setor</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -380,12 +380,12 @@ const CTA = () => (
         viewport={{ once: true }}
         className="bg-gradient-to-r from-blue-900/30 to-indigo-900/30 rounded-3xl p-10 md:p-16 text-center backdrop-blur-sm"
       >
-        <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to Start Trading?</h2>
+        <h2 className="text-3xl md:text-4xl font-bold mb-6">Pronto para começar a negociar?</h2>
         <p className="text-slate-300 max-w-2xl mx-auto mb-8">
-          Join thousands of investors who trust {SITE_NAME} with their investments. Sign up today and start earning in minutes.
+          Junte-se a milhares de investidores que confiam seus investimentos à {SITE_NAME}. Cadastre-se hoje e comece a ganhar em minutos.
         </p>
         <Link to="/register" className="inline-block px-8 py-4 rounded-lg gradient-bg text-white font-bold text-lg hover:opacity-90 transition transform hover:scale-105">
-          Create Account Now
+          Criar Conta Agora
         </Link>
       </motion.div>
     </div>
@@ -399,7 +399,7 @@ const Footer = () => (
         <div>
           <h2 className="text-xl font-bold gradient-text mb-4">{SITE_NAME}</h2>
           <p className="text-slate-400 mb-6 text-sm leading-relaxed">
-            A globally recognized, innovative, and top-tier investment company operating in financial markets with professional traders to ensure secure trading experiences.
+            Uma empresa de investimentos globalmente reconhecida, inovadora e de alto nível que atua nos mercados financeiros com traders profissionais para garantir experiências de negociação seguras.
           </p>
           <div className="flex space-x-4">
             <a href="#" className="text-slate-400 hover:text-blue-500 transition">
@@ -418,7 +418,7 @@ const Footer = () => (
         </div>
 
         <div>
-          <h3 className="text-lg font-bold text-white mb-6">Contact</h3>
+          <h3 className="text-lg font-bold text-white mb-6">Contato</h3>
           <ul className="space-y-4">
             <li className="flex items-start">
               <i className="fas fa-phone mt-1 text-blue-500 mr-3"></i>
@@ -430,35 +430,35 @@ const Footer = () => (
             </li>
             <li className="flex items-start">
               <i className="fas fa-map-marker-alt mt-1 text-blue-500 mr-3"></i>
-              <span className="text-slate-400">United Kingdom</span>
+              <span className="text-slate-400">Reino Unido</span>
             </li>
           </ul>
         </div>
 
         <div>
-          <h3 className="text-lg font-bold text-white mb-6">Quick Links</h3>
+          <h3 className="text-lg font-bold text-white mb-6">Links Rápidos</h3>
           <ul className="space-y-3">
-            <li><Link to="/dashboard" className="text-slate-400 hover:text-blue-500 transition">Dashboard</Link></li>
-            <li><Link to="/deposit" className="text-slate-400 hover:text-blue-500 transition">Deposit</Link></li>
-            <li><Link to="/withdraw" className="text-slate-400 hover:text-blue-500 transition">Withdraw</Link></li>
-            <li><Link to="/plans" className="text-slate-400 hover:text-blue-500 transition">Investment Plans</Link></li>
+            <li><Link to="/dashboard" className="text-slate-400 hover:text-blue-500 transition">Painel</Link></li>
+            <li><Link to="/deposit" className="text-slate-400 hover:text-blue-500 transition">Depósito</Link></li>
+            <li><Link to="/withdraw" className="text-slate-400 hover:text-blue-500 transition">Sacar</Link></li>
+            <li><Link to="/plans" className="text-slate-400 hover:text-blue-500 transition">Planos de Investimento</Link></li>
           </ul>
         </div>
 
         <div>
-          <h3 className="text-lg font-bold text-white mb-6">Support</h3>
+          <h3 className="text-lg font-bold text-white mb-6">Suporte</h3>
           <ul className="space-y-3">
-            <li><Link to="/support" className="text-slate-400 hover:text-blue-500 transition">Contact Support</Link></li>
-            <li><Link to="/faq" className="text-slate-400 hover:text-blue-500 transition">FAQ</Link></li>
-            <li><Link to="/terms" className="text-slate-400 hover:text-blue-500 transition">Terms & Conditions</Link></li>
-            <li><Link to="/privacy" className="text-slate-400 hover:text-blue-500 transition">Privacy Policy</Link></li>
+            <li><Link to="/support" className="text-slate-400 hover:text-blue-500 transition">Fale com o Suporte</Link></li>
+            <li><Link to="/faq" className="text-slate-400 hover:text-blue-500 transition">Perguntas Frequentes</Link></li>
+            <li><Link to="/terms" className="text-slate-400 hover:text-blue-500 transition">Termos e Condições</Link></li>
+            <li><Link to="/privacy" className="text-slate-400 hover:text-blue-500 transition">Política de Privacidade</Link></li>
           </ul>
         </div>
       </div>
 
       <div className="pt-10 border-t border-slate-800 text-center">
         <p className="text-slate-500 text-sm">
-          © 2024 {SITE_NAME}. All Rights Reserved
+          © 2024 {SITE_NAME}. Todos os direitos reservados.
         </p>
       </div>
     </div>

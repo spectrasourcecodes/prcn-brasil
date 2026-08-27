@@ -14,7 +14,7 @@ const Register = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: '', // Changed from name to fullName to match API
+    fullName: '',
     email: '',
     phone: '',
     country: 'US',
@@ -35,46 +35,40 @@ const Register = () => {
     e.preventDefault();
 
     if (!formData.fullName || !formData.email || !formData.password || !formData.confirmPassword) {
-      toast.error("Please fill in all required fields");
+      toast.error("Preencha todos os campos obrigatórios");
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      toast.error("Passwords do not match");
+      toast.error("As senhas não coincidem");
       return;
     }
 
     if (formData.password.length < 6) {
-      toast.error("Password must be at least 6 characters");
+      toast.error("A senha deve ter pelo menos 6 caracteres");
       return;
     }
 
     if (!formData.agreeTerms) {
-      toast.error("Please agree to the Terms & Conditions");
+      toast.error("Aceite os Termos e Condições para continuar");
       return;
     }
 
     setLoading(true);
-    // Prepare data for API: fullName, email, phone, country, password
     const { fullName, email, phone, country, password } = formData;
     const result = await registerUser({ fullName, email, phone, country, password });
     setLoading(false);
 
     if (result.success) {
-      toast.success("Registration successful!");
+      toast.success("Cadastro realizado com sucesso!");
       navigate("/dashboard");
     } else {
-      toast.error(result.error || "Registration failed");
+      toast.error(result.error || "Falha no cadastro");
     }
   };
 
   return (
-    // ... same JSX but with name="fullName" for the name field
-    // Also ensure the form fields use fullName
-    // The rest of the JSX is the same as provided, just update the name attribute
-    // I'll provide the full JSX with the name change
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
-      {/* background blobs */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500 rounded-full mix-blend-lighten filter blur-3xl opacity-20 animate-blob"></div>
         <div className="absolute bottom-20 right-10 w-80 h-80 bg-purple-500 rounded-full mix-blend-lighten filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
@@ -91,12 +85,12 @@ const Register = () => {
             <Link to="/">
               <h1 className="text-3xl font-bold gradient-text">{SITE_NAME}</h1>
             </Link>
-            <p className="text-slate-400 mt-2">Create your free account</p>
+            <p className="text-slate-400 mt-2">Crie sua conta gratuita</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-slate-300 text-sm font-medium mb-2">Full Name *</label>
+              <label className="block text-slate-300 text-sm font-medium mb-2">Nome Completo *</label>
               <div className="relative">
                 <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
                 <input
@@ -104,14 +98,14 @@ const Register = () => {
                   name="fullName"
                   value={formData.fullName}
                   onChange={handleChange}
-                  placeholder="John Doe"
+                  placeholder="João Silva"
                   className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-10 pr-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-slate-300 text-sm font-medium mb-2">Email Address *</label>
+              <label className="block text-slate-300 text-sm font-medium mb-2">E-mail *</label>
               <div className="relative">
                 <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
                 <input
@@ -119,14 +113,14 @@ const Register = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="john@example.com"
+                  placeholder="joao@exemplo.com"
                   className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-10 pr-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-slate-300 text-sm font-medium mb-2">Phone Number</label>
+              <label className="block text-slate-300 text-sm font-medium mb-2">Telefone</label>
               <div className="relative">
                 <FaPhone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
                 <input
@@ -134,14 +128,14 @@ const Register = () => {
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  placeholder="+1234567890"
+                  placeholder="+5511999999999"
                   className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-10 pr-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-slate-300 text-sm font-medium mb-2">Country</label>
+              <label className="block text-slate-300 text-sm font-medium mb-2">País</label>
               <div className="relative">
                 <FaGlobe className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
                 <select
@@ -160,7 +154,7 @@ const Register = () => {
             </div>
 
             <div>
-              <label className="block text-slate-300 text-sm font-medium mb-2">Password *</label>
+              <label className="block text-slate-300 text-sm font-medium mb-2">Senha *</label>
               <div className="relative">
                 <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
                 <input
@@ -182,7 +176,7 @@ const Register = () => {
             </div>
 
             <div>
-              <label className="block text-slate-300 text-sm font-medium mb-2">Confirm Password *</label>
+              <label className="block text-slate-300 text-sm font-medium mb-2">Confirme a Senha *</label>
               <div className="relative">
                 <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
                 <input
@@ -212,13 +206,13 @@ const Register = () => {
                 className="w-4 h-4 rounded border-slate-600 bg-slate-900 text-blue-600 focus:ring-blue-500"
               />
               <label className="ml-2 text-sm text-slate-400">
-                I agree to the{' '}
+                Eu concordo com os{' '}
                 <Link to="/terms" className="text-blue-400 hover:text-blue-300">
-                  Terms & Conditions
+                  Termos e Condições
                 </Link>
-                {' '}and{' '}
+                {' '}e com a{' '}
                 <Link to="/privacy" className="text-blue-400 hover:text-blue-300">
-                  Privacy Policy
+                  Política de Privacidade
                 </Link>
               </label>
             </div>
@@ -232,7 +226,7 @@ const Register = () => {
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
               ) : (
                 <>
-                  Create Account <FaArrowRight />
+                  Criar Conta <FaArrowRight />
                 </>
               )}
             </button>
@@ -240,9 +234,9 @@ const Register = () => {
 
           <div className="mt-6 text-center">
             <p className="text-slate-400">
-              Already have an account?{' '}
+              Já possui uma conta?{' '}
               <Link to="/login" className="text-blue-400 hover:text-blue-300 font-semibold transition">
-                Sign In
+                Entrar
               </Link>
             </p>
           </div>

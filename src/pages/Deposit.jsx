@@ -36,8 +36,8 @@ const Deposit = () => {
         setSelectedWallet(wallets[0]);
       }
     } catch (error) {
-      console.error('Error fetching admin wallets:', error);
-      toast.error('Failed to load payment methods');
+      console.error('Erro ao buscar carteiras administrativas:', error);
+      toast.error('Falha ao carregar métodos de pagamento');
     } finally {
       setFetchingWallets(false);
     }
@@ -52,7 +52,7 @@ const Deposit = () => {
     if (currency === 'eth') return FaEthereum;
     if (currency === 'usdt') return SiTether;
     if (currency === 'bnb') return SiBinance;
-    if (currency === 'trx') return FaBitcoin; // Fallback for TRX
+    if (currency === 'trx') return FaBitcoin; // Fallback para TRX
     return FaMoneyBillWave;
   };
 
@@ -77,11 +77,11 @@ const Deposit = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!amount || parseFloat(amount) < 10) {
-      toast.error('Minimum deposit is $10');
+      toast.error('O depósito mínimo é de $10');
       return;
     }
     if (!selectedWallet) {
-      toast.error('Please select a payment method');
+      toast.error('Por favor, selecione um método de pagamento');
       return;
     }
 
@@ -97,10 +97,10 @@ const Deposit = () => {
       const data = await walletService.createDeposit(depositData);
       setDepositAddress(selectedWallet.address);
       setDepositReference(data.reference || '');
-      toast.success('Deposit request created! Please send funds to the address below.');
+      toast.success('Solicitação de depósito criada! Envie os fundos para o endereço abaixo.');
     } catch (error) {
-      console.error('Deposit creation error:', error);
-      toast.error(error.response?.data?.message || 'Failed to create deposit');
+      console.error('Erro ao criar depósito:', error);
+      toast.error(error.response?.data?.message || 'Falha ao criar depósito');
     } finally {
       setLoading(false);
     }
@@ -109,7 +109,7 @@ const Deposit = () => {
   const copyAddress = () => {
     if (depositAddress) {
       navigator.clipboard.writeText(depositAddress);
-      toast.success('Address copied!');
+      toast.success('Endereço copiado!');
     }
   };
 
@@ -131,8 +131,8 @@ const Deposit = () => {
         <div className="p-4 sm:p-6 max-w-2xl mx-auto">
           <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl p-8 text-center border border-slate-700">
             <FaMoneyBillWave className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-white mb-2">No Payment Methods Available</h2>
-            <p className="text-slate-400">Please contact support.</p>
+            <h2 className="text-xl font-bold text-white mb-2">Nenhum Método de Pagamento Disponível</h2>
+            <p className="text-slate-400">Por favor, entre em contato com o suporte.</p>
           </div>
         </div>
       </div>
@@ -144,8 +144,8 @@ const Deposit = () => {
       <Navbar />
       <div className="p-4 sm:p-6 max-w-2xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">Deposit Funds</h1>
-          <p className="text-slate-400 mt-1">Add funds to your wallet</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">Depositar Fundos</h1>
+          <p className="text-slate-400 mt-1">Adicione fundos à sua carteira</p>
         </div>
 
         <motion.div
@@ -155,7 +155,7 @@ const Deposit = () => {
         >
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-slate-300 text-sm font-medium mb-2">Select Payment Method</label>
+              <label className="block text-slate-300 text-sm font-medium mb-2">Selecione o Método de Pagamento</label>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {adminWallets.map((wallet) => {
                   const Icon = getWalletIcon(wallet);
@@ -185,39 +185,39 @@ const Deposit = () => {
 
             {selectedWallet && (
               <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
-                <p className="text-slate-300 text-sm font-medium mb-1">Selected: {selectedWallet.name}</p>
+                <p className="text-slate-300 text-sm font-medium mb-1">Selecionado: {selectedWallet.name}</p>
                 {selectedWallet.type === 'pix' && (
                   <div className="space-y-1 text-sm">
-                    <p><span className="text-slate-400">PIX Key:</span> <span className="text-white">{selectedWallet.address}</span></p>
+                    <p><span className="text-slate-400">Chave PIX:</span> <span className="text-white">{selectedWallet.address}</span></p>
                     {selectedWallet.details?.name && (
-                      <p><span className="text-slate-400">Name:</span> <span className="text-white">{selectedWallet.details.name}</span></p>
+                      <p><span className="text-slate-400">Nome:</span> <span className="text-white">{selectedWallet.details.name}</span></p>
                     )}
                     {selectedWallet.details?.bank && (
-                      <p><span className="text-slate-400">Bank:</span> <span className="text-white">{selectedWallet.details.bank}</span></p>
+                      <p><span className="text-slate-400">Banco:</span> <span className="text-white">{selectedWallet.details.bank}</span></p>
                     )}
                   </div>
                 )}
                 {selectedWallet.type === 'bank' && (
                   <div className="space-y-1 text-sm">
-                    <p><span className="text-slate-400">Bank:</span> <span className="text-white">{selectedWallet.details?.bankName || 'N/A'}</span></p>
-                    <p><span className="text-slate-400">Account Name:</span> <span className="text-white">{selectedWallet.details?.accountName || 'N/A'}</span></p>
-                    <p><span className="text-slate-400">Account Number:</span> <span className="text-white">{selectedWallet.address}</span></p>
+                    <p><span className="text-slate-400">Banco:</span> <span className="text-white">{selectedWallet.details?.bankName || 'N/A'}</span></p>
+                    <p><span className="text-slate-400">Nome da Conta:</span> <span className="text-white">{selectedWallet.details?.accountName || 'N/A'}</span></p>
+                    <p><span className="text-slate-400">Número da Conta:</span> <span className="text-white">{selectedWallet.address}</span></p>
                     {selectedWallet.details?.routingNumber && (
-                      <p><span className="text-slate-400">Routing:</span> <span className="text-white">{selectedWallet.details.routingNumber}</span></p>
+                      <p><span className="text-slate-400">Roteamento:</span> <span className="text-white">{selectedWallet.details.routingNumber}</span></p>
                     )}
                   </div>
                 )}
                 {selectedWallet.type === 'crypto' && (
                   <div className="space-y-1 text-sm">
-                    <p><span className="text-slate-400">Network:</span> <span className="text-white">{selectedWallet.details?.network || 'N/A'}</span></p>
-                    <p><span className="text-slate-400">Address:</span> <span className="text-white break-all">{selectedWallet.address}</span></p>
+                    <p><span className="text-slate-400">Rede:</span> <span className="text-white">{selectedWallet.details?.network || 'N/A'}</span></p>
+                    <p><span className="text-slate-400">Endereço:</span> <span className="text-white break-all">{selectedWallet.address}</span></p>
                   </div>
                 )}
               </div>
             )}
 
             <div>
-              <label className="block text-slate-300 text-sm font-medium mb-2">Amount (USD)</label>
+              <label className="block text-slate-300 text-sm font-medium mb-2">Valor (USD)</label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">$</span>
                 <input
@@ -230,7 +230,7 @@ const Deposit = () => {
                   className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-8 pr-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
                 />
               </div>
-              <p className="text-slate-400 text-xs mt-1">Minimum deposit: $10.00</p>
+              <p className="text-slate-400 text-xs mt-1">Depósito mínimo: $10.00</p>
             </div>
 
             <button
@@ -242,7 +242,7 @@ const Deposit = () => {
                 <FaSpinner className="animate-spin" />
               ) : (
                 <>
-                  <FaArrowUp className="text-sm" /> Generate Deposit Instructions
+                  <FaArrowUp className="text-sm" /> Gerar Instruções de Depósito
                 </>
               )}
             </button>
@@ -254,58 +254,58 @@ const Deposit = () => {
               animate={{ opacity: 1, height: 'auto' }}
               className="mt-6 pt-6 border-t border-slate-700"
             >
-              <p className="text-slate-300 text-sm font-medium mb-2">Deposit Instructions:</p>
+              <p className="text-slate-300 text-sm font-medium mb-2">Instruções de Depósito:</p>
               <div className="bg-slate-900 rounded-lg p-3 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-400 text-xs">Reference:</span>
+                  <span className="text-slate-400 text-xs">Referência:</span>
                   <code className="text-xs text-white">{depositReference}</code>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-400 text-xs">Amount:</span>
+                  <span className="text-slate-400 text-xs">Valor:</span>
                   <span className="text-xs text-white">${amount}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-400 text-xs">Payment Method:</span>
+                  <span className="text-slate-400 text-xs">Método de Pagamento:</span>
                   <span className="text-xs text-white">{selectedWallet?.name}</span>
                 </div>
                 {selectedWallet?.type === 'crypto' && (
                   <>
                     <div className="flex items-center justify-between">
-                      <span className="text-slate-400 text-xs">Address:</span>
+                      <span className="text-slate-400 text-xs">Endereço:</span>
                       <code className="text-xs text-white break-all">{depositAddress}</code>
                     </div>
                     <button onClick={copyAddress} className="w-full py-2 bg-slate-700 rounded-lg hover:bg-slate-600 transition flex items-center justify-center gap-2 text-white text-sm">
-                      <FaCopy /> Copy Address
+                      <FaCopy /> Copiar Endereço
                     </button>
                   </>
                 )}
                 {selectedWallet?.type === 'pix' && (
                   <>
                     <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3 text-center">
-                      <p className="text-emerald-400 text-sm font-medium">PIX Key</p>
+                      <p className="text-emerald-400 text-sm font-medium">Chave PIX</p>
                       <p className="text-white text-sm break-all">{depositAddress}</p>
                     </div>
                     <button onClick={copyAddress} className="w-full py-2 bg-slate-700 rounded-lg hover:bg-slate-600 transition flex items-center justify-center gap-2 text-white text-sm">
-                      <FaCopy /> Copy PIX Key
+                      <FaCopy /> Copiar Chave PIX
                     </button>
                   </>
                 )}
                 {selectedWallet?.type === 'bank' && (
                   <div className="text-xs text-slate-400 space-y-1">
-                    <p>Bank Transfer Details:</p>
+                    <p>Detalhes da Transferência Bancária:</p>
                     <div className="bg-slate-800 rounded p-2">
-                      <p><span className="text-slate-500">Bank:</span> {selectedWallet.details?.bankName}</p>
-                      <p><span className="text-slate-500">Account Name:</span> {selectedWallet.details?.accountName}</p>
-                      <p><span className="text-slate-500">Account Number:</span> {selectedWallet.address}</p>
+                      <p><span className="text-slate-500">Banco:</span> {selectedWallet.details?.bankName}</p>
+                      <p><span className="text-slate-500">Nome da Conta:</span> {selectedWallet.details?.accountName}</p>
+                      <p><span className="text-slate-500">Número da Conta:</span> {selectedWallet.address}</p>
                       {selectedWallet.details?.routingNumber && (
-                        <p><span className="text-slate-500">Routing Number:</span> {selectedWallet.details.routingNumber}</p>
+                        <p><span className="text-slate-500">Número de Roteamento:</span> {selectedWallet.details.routingNumber}</p>
                       )}
                     </div>
                   </div>
                 )}
               </div>
               <p className="text-yellow-500 text-xs mt-2">
-                ⚠️ Send the exact amount as shown above. Deposits are subject to verification.
+                ⚠️ Envie o valor exato mostrado acima. Os depósitos estão sujeitos a verificação.
               </p>
             </motion.div>
           )}

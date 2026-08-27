@@ -35,30 +35,30 @@ const Support = () => {
 
   const faqs = [
     {
-      question: "How do I make a deposit?",
-      answer: "You can make a deposit by navigating to the Deposit page, selecting your preferred payment method, and following the instructions. We accept various cryptocurrencies and bank transfers."
+      question: "Como faço para fazer um depósito?",
+      answer: "Você pode fazer um depósito navegando até a página de Depósito, selecionando seu método de pagamento preferido e seguindo as instruções. Aceitamos diversas criptomoedas e transferências bancárias."
     },
     {
-      question: "How long do withdrawals take?",
-      answer: "Withdrawals are processed within 24-48 hours after verification. Crypto withdrawals are usually faster (30-60 minutes) while bank transfers may take 1-3 business days."
+      question: "Quanto tempo demoram os saques?",
+      answer: "Os saques são processados em até 24-48 horas após a verificação. Saques em criptomoedas geralmente são mais rápidos (30-60 minutos), enquanto transferências bancárias podem levar de 1 a 3 dias úteis."
     },
     {
-      question: "What is the minimum investment?",
-      answer: "The minimum investment amount is $100 for the Starter Plan. Each plan has different minimum requirements - please check our Investment Plans page for details."
+      question: "Qual é o investimento mínimo?",
+      answer: "O valor mínimo de investimento é de $100 para o Plano Iniciante. Cada plano tem requisitos mínimos diferentes - consulte nossa página de Planos de Investimento para mais detalhes."
     },
     {
-      question: "How do I earn referral commissions?",
-      answer: "Share your unique referral link with friends. When they sign up and invest, you earn 5% commission on their investment amount. Commissions are credited instantly to your account."
+      question: "Como ganho comissões por indicação?",
+      answer: "Compartilhe seu link de indicação exclusivo com amigos. Quando eles se cadastrarem e investirem, você ganha 5% de comissão sobre o valor investido. As comissões são creditadas instantaneamente em sua conta."
     },
     {
-      question: "Is my money safe?",
-      answer: "Yes, we use bank-level security measures including 2FA, cold storage for cryptocurrencies, and regular security audits to protect your funds."
+      question: "Meu dinheiro está seguro?",
+      answer: "Sim, utilizamos medidas de segurança de nível bancário, incluindo autenticação de dois fatores (2FA), armazenamento frio para criptomoedas e auditorias regulares de segurança para proteger seus fundos."
     }
   ];
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    toast.success('Support ticket submitted! We\'ll respond within 24 hours.');
+    toast.success('Chamado enviado! Responderemos em até 24 horas.');
     setFormData({ name: '', email: '', subject: '', message: '' });
   };
 
@@ -76,16 +76,16 @@ const Support = () => {
       
       <main className="p-4 sm:p-6">
         <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">Support Center</h1>
-          <p className="text-slate-400 mt-1">Get help with your account or trading needs</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">Central de Suporte</h1>
+          <p className="text-slate-400 mt-1">Obtenha ajuda com sua conta ou necessidades de trading</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Contact Options */}
+          {/* Opções de Contato */}
           <div>
-            <h2 className="text-lg font-semibold text-white mb-4">Contact Us</h2>
+            <h2 className="text-lg font-semibold text-white mb-4">Entre em Contato</h2>
             <div className="space-y-4">
-              {/* Live Chat - Replacing Email */}
+              {/* Chat ao Vivo */}
               <button
                 onClick={openLiveChat}
                 className="w-full flex items-center p-4 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition group"
@@ -94,8 +94,8 @@ const Support = () => {
                   <FaComments className="text-2xl" />
                 </div>
                 <div className="flex-1 text-left">
-                  <h3 className="font-semibold">Live Chat</h3>
-                  <p className="text-sm text-white/80">Chat with support instantly</p>
+                  <h3 className="font-semibold">Chat ao Vivo</h3>
+                  <p className="text-sm text-white/80">Converse com o suporte instantaneamente</p>
                 </div>
                 <FaExternalLinkAlt className="text-white/60 text-sm" />
               </button>
@@ -110,8 +110,8 @@ const Support = () => {
                   <FaTelegram className="text-2xl" />
                 </div>
                 <div>
-                  <h3 className="font-semibold">Telegram Support</h3>
-                  <p className="text-sm text-white/80">Chat with our team instantly</p>
+                  <h3 className="font-semibold">Suporte por Telegram</h3>
+                  <p className="text-sm text-white/80">Converse com nossa equipe instantaneamente</p>
                 </div>
               </a>
 
@@ -125,24 +125,24 @@ const Support = () => {
                   <FaWhatsapp className="text-2xl" />
                 </div>
                 <div>
-                  <h3 className="font-semibold">WhatsApp Support</h3>
+                  <h3 className="font-semibold">Suporte por WhatsApp</h3>
                   <p className="text-sm text-white/80">+{ADMIN_WHATSAPP}</p>
                 </div>
               </a>
             </div>
           </div>
 
-          {/* Contact Form */}
+          {/* Formulário de Contato */}
           <div>
             <div className="bg-slate-800 rounded-2xl p-6">
               <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                 <FaHeadset className="text-blue-400" />
-                Submit a Ticket
+                Abrir um Chamado
               </h2>
               
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-slate-400 text-sm mb-2">Full Name</label>
+                  <label className="block text-slate-400 text-sm mb-2">Nome Completo</label>
                   <input
                     type="text"
                     name="name"
@@ -154,7 +154,7 @@ const Support = () => {
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 text-sm mb-2">Email Address</label>
+                  <label className="block text-slate-400 text-sm mb-2">E-mail</label>
                   <input
                     type="email"
                     name="email"
@@ -166,7 +166,7 @@ const Support = () => {
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 text-sm mb-2">Subject</label>
+                  <label className="block text-slate-400 text-sm mb-2">Assunto</label>
                   <input
                     type="text"
                     name="subject"
@@ -178,7 +178,7 @@ const Support = () => {
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 text-sm mb-2">Message</label>
+                  <label className="block text-slate-400 text-sm mb-2">Mensagem</label>
                   <textarea
                     name="message"
                     required
@@ -193,18 +193,18 @@ const Support = () => {
                   type="submit"
                   className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold hover:opacity-90 transition"
                 >
-                  Submit Ticket
+                  Enviar Chamado
                 </button>
               </form>
             </div>
           </div>
         </div>
 
-        {/* FAQ Section */}
+        {/* Seção de FAQ */}
         <div className="mt-8">
           <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
             <FaQuestionCircle className="text-blue-400" />
-            Frequently Asked Questions
+            Perguntas Frequentes
           </h2>
           <div className="space-y-3">
             {faqs.map((faq, index) => (

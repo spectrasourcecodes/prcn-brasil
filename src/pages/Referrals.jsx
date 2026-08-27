@@ -17,7 +17,7 @@ const Referrals = () => {
   });
   const [copied, setCopied] = useState(false);
 
-  // Build referral link only if code exists
+  // Construir o link de indicação apenas se o código existir
   const referralLink = referralData.code ? `${window.location.origin}/register?ref=${referralData.code}` : '';
 
   useEffect(() => {
@@ -27,11 +27,11 @@ const Referrals = () => {
   const fetchReferralData = async () => {
     try {
       setLoading(true);
-      // Fetch referral stats
+      // Buscar estatísticas de indicação
       const statsRes = await API.get('/referrals/stats');
       if (statsRes.data.success) {
         const data = statsRes.data.data;
-        // Use referral code from stats, or from user object, or fallback to empty
+        // Usar o código de indicação das estatísticas, ou do objeto user, ou fallback para vazio
         const code = data.referralCode || user?.referralCode || '';
         setReferralData({
           code: code,
@@ -39,17 +39,17 @@ const Referrals = () => {
           totalEarned: data.totalEarned || 0,
           referrals: data.referrals || [],
         });
-        // If user doesn't have referral code in context, update it
+        // Se o usuário não tiver o código de indicação no contexto, atualiza
         if (!user?.referralCode && code) {
           updateUser({ referralCode: code });
         }
       } else {
-        toast.error('Failed to load referral data');
+        toast.error('Falha ao carregar dados de indicação');
       }
     } catch (error) {
-      console.error('Referral fetch error:', error);
-      toast.error(error.response?.data?.message || 'Failed to load referral data');
-      // Fallback: use user's referral code if available
+      console.error('Erro ao buscar indicações:', error);
+      toast.error(error.response?.data?.message || 'Falha ao carregar dados de indicação');
+      // Fallback: usar o código de indicação do usuário se disponível
       if (user?.referralCode) {
         setReferralData(prev => ({ ...prev, code: user.referralCode }));
       }
@@ -60,12 +60,12 @@ const Referrals = () => {
 
   const copyToClipboard = (text) => {
     if (!text) {
-      toast.error('No referral code available yet');
+      toast.error('Nenhum código de indicação disponível ainda');
       return;
     }
     navigator.clipboard.writeText(text);
     setCopied(true);
-    toast.success('Copied to clipboard!');
+    toast.success('Copiado para a área de transferência!');
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -77,7 +77,7 @@ const Referrals = () => {
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <FaSpinner className="w-12 h-12 text-blue-500 animate-spin mx-auto mb-4" />
-              <p className="text-slate-400">Loading referral data...</p>
+              <p className="text-slate-400">Carregando dados de indicação...</p>
             </div>
           </div>
         </main>
@@ -85,7 +85,7 @@ const Referrals = () => {
     );
   }
 
-  // Check if referral code is available
+  // Verificar se o código de indicação está disponível
   const hasReferralCode = !!referralData.code;
 
   return (
@@ -94,24 +94,24 @@ const Referrals = () => {
       
       <main className="p-4 sm:p-6">
         <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">Referral Program</h1>
-          <p className="text-slate-400 mt-1">Invite friends and earn 5% commission on their investments</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">Programa de Indicação</h1>
+          <p className="text-slate-400 mt-1">Convide amigos e ganhe 5% de comissão sobre os investimentos deles</p>
         </div>
 
-        {/* Stats */}
+        {/* Estatísticas */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-          <StatCard title="Total Referrals" value={referralData.totalReferrals} icon={FaUsers} />
-          <StatCard title="Total Commission" value={referralData.totalEarned} icon={FaGift} />
+          <StatCard title="Total de Indicações" value={referralData.totalReferrals} icon={FaUsers} />
+          <StatCard title="Comissão Total" value={referralData.totalEarned} icon={FaGift} />
         </div>
 
-        {/* Referral Link */}
+        {/* Link de Indicação */}
         <div className="bg-gradient-to-br from-blue-900/30 to-purple-900/30 rounded-2xl p-6 mb-6">
-          <h2 className="text-lg font-bold text-white mb-4">Share Your Referral Link</h2>
+          <h2 className="text-lg font-bold text-white mb-4">Compartilhe seu Link de Indicação</h2>
           
           {hasReferralCode ? (
             <div className="space-y-4">
               <div>
-                <label className="block text-slate-400 text-sm mb-2">Your Referral Code</label>
+                <label className="block text-slate-400 text-sm mb-2">Seu Código de Indicação</label>
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -129,7 +129,7 @@ const Referrals = () => {
               </div>
 
               <div>
-                <label className="block text-slate-400 text-sm mb-2">Your Referral Link</label>
+                <label className="block text-slate-400 text-sm mb-2">Seu Link de Indicação</label>
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -150,8 +150,8 @@ const Referrals = () => {
                 onClick={() => {
                   if (navigator.share) {
                     navigator.share({
-                      title: 'Join Ark',
-                      text: `Join Ark using my referral link: ${referralLink}`,
+                      title: 'Junte-se à nossa plataforma',
+                      text: `Junte-se à nossa plataforma usando meu link de indicação: ${referralLink}`,
                       url: referralLink,
                     }).catch(() => {});
                   } else {
@@ -160,50 +160,50 @@ const Referrals = () => {
                 }}
                 className="w-full py-3 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
               >
-                <FaShare /> Share on Social Media
+                <FaShare /> Compartilhar nas Redes Sociais
               </button>
             </div>
           ) : (
             <div className="text-center py-6">
-              <p className="text-slate-400">No referral code available. Please refresh or contact support.</p>
+              <p className="text-slate-400">Nenhum código de indicação disponível. Atualize a página ou entre em contato com o suporte.</p>
             </div>
           )}
         </div>
 
-        {/* Referral List */}
+        {/* Lista de Indicações */}
         <div className="bg-slate-800 rounded-2xl p-6">
-          <h2 className="text-lg font-bold text-white mb-4">Your Referrals</h2>
+          <h2 className="text-lg font-bold text-white mb-4">Suas Indicações</h2>
           
           {referralData.referrals.length > 0 ? (
             <div className="space-y-3">
               {referralData.referrals.map((referral, index) => (
                 <div key={index} className="flex justify-between items-center p-3 bg-slate-700/50 rounded-lg">
                   <div>
-                    <p className="font-semibold text-white">{referral.name || referral.fullName || 'User'}</p>
+                    <p className="font-semibold text-white">{referral.name || referral.fullName || 'Usuário'}</p>
                     <p className="text-xs text-slate-400">
-                      Joined: {referral.date ? new Date(referral.date).toLocaleDateString() : 'N/A'}
+                      Entrou em: {referral.date ? new Date(referral.date).toLocaleDateString('pt-BR') : 'N/A'}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm text-slate-400">Investment</p>
+                    <p className="text-sm text-slate-400">Investimento</p>
                     <p className="font-bold text-white">${(referral.investment || 0).toLocaleString()}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm text-slate-400">Commission</p>
+                    <p className="text-sm text-slate-400">Comissão</p>
                     <p className="font-bold text-green-500">${(referral.commission || 0).toLocaleString()}</p>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-center text-slate-400 py-8">No referrals yet. Share your link to start earning!</p>
+            <p className="text-center text-slate-400 py-8">Nenhuma indicação ainda. Compartilhe seu link para começar a ganhar!</p>
           )}
         </div>
 
-        {/* Bonus Info */}
+        {/* Informações de Bônus */}
         <div className="mt-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
           <p className="text-yellow-500 text-sm text-center">
-            💰 Bonus: Get an additional $50 bonus for every 5 referrals who invest at least $500!
+            💰 Bônus: Ganhe $50 extras para cada 5 indicações que investirem pelo menos $500!
           </p>
         </div>
       </main>

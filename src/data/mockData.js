@@ -5,10 +5,10 @@ export const ADMIN_TELEGRAM = "https://t.me/cryptoinvestpro";
 
 export const mockUser = {
   id: "USR8781",
-  name: "Marius Vinkeliss",
-  email: "m.vinkelis@inbox.it",
-  phone: "+37067770201",
-  country: "Lithuania",
+  name: "João Silva",
+  email: "joao.silva@email.com",
+  phone: "+5511999999999",
+  country: "Brasil",
   currency: "USD",
   avatar: "https://www.magnific.com/free-photos-vectors/user-profile",
   memberSince: "2026-04-26",
@@ -47,7 +47,7 @@ export const mockForexPairs = [
 export const mockInvestmentPlans = [
   {
     id: 1,
-    name: "Starter",
+    name: "Iniciante",
     minAmount: 300,
     maxAmount: 1000,
     roi: 12,
@@ -71,7 +71,7 @@ export const mockInvestmentPlans = [
   },
   {
     id: 3,
-    name: "Silver",
+    name: "Prata",
     minAmount: 5000,
     maxAmount: 15000,
     roi: 24,
@@ -83,7 +83,7 @@ export const mockInvestmentPlans = [
   },
   {
     id: 4,
-    name: "Gold",
+    name: "Ouro",
     minAmount: 15000,
     maxAmount: 50000,
     roi: 32,
@@ -95,7 +95,7 @@ export const mockInvestmentPlans = [
   },
   {
     id: 5,
-    name: "Platinum",
+    name: "Platina",
     minAmount: 50000,
     maxAmount: 150000,
     roi: 40,
@@ -107,7 +107,7 @@ export const mockInvestmentPlans = [
   },
   {
     id: 6,
-    name: "Diamond",
+    name: "Diamante",
     minAmount: 150000,
     maxAmount: null,
     roi: 50,
@@ -120,64 +120,64 @@ export const mockInvestmentPlans = [
 ];
 
 export const mockTransactions = [
-  // { id: "TX001", type: "deposit", amount: 5000, currency: "USD", status: "completed", date: "2024-01-15T10:30:00", method: "Bank Transfer" },
-  // { id: "TX002", type: "investment", amount: 3000, currency: "USD", status: "completed", date: "2024-01-16T14:20:00", plan: "Silver Plan" },
-  // { id: "TX003", type: "profit", amount: 540, currency: "USD", status: "completed", date: "2024-01-20T09:15:00", plan: "Silver Plan" },
-  // { id: "TX004", type: "withdraw", amount: 2000, currency: "USD", status: "pending", date: "2024-01-22T16:45:00", method: "USDT (TRC20)" },
-  // { id: "TX005", type: "deposit", amount: 2500, currency: "USD", status: "completed", date: "2024-01-10T11:00:00", method: "Credit Card" },
-  // { id: "TX006", type: "investment", amount: 5000, currency: "USD", status: "completed", date: "2024-01-12T13:30:00", plan: "Gold Plan" },
-  // { id: "TX007", type: "profit", amount: 1600, currency: "USD", status: "completed", date: "2024-01-18T10:00:00", plan: "Gold Plan" },
-  // { id: "TX008", type: "referral", amount: 250, currency: "USD", status: "completed", date: "2024-01-19T08:30:00", from: "Sarah Johnson" }
+  // { id: "TX001", type: "depósito", amount: 5000, currency: "USD", status: "concluído", date: "2024-01-15T10:30:00", method: "Transferência Bancária" },
+  // { id: "TX002", type: "investimento", amount: 3000, currency: "USD", status: "concluído", date: "2024-01-16T14:20:00", plan: "Plano Prata" },
+  // { id: "TX003", type: "lucro", amount: 540, currency: "USD", status: "concluído", date: "2024-01-20T09:15:00", plan: "Plano Prata" },
+  // { id: "TX004", type: "saque", amount: 2000, currency: "USD", status: "pendente", date: "2024-01-22T16:45:00", method: "USDT (TRC20)" },
+  // { id: "TX005", type: "depósito", amount: 2500, currency: "USD", status: "concluído", date: "2024-01-10T11:00:00", method: "Cartão de Crédito" },
+  // { id: "TX006", type: "investimento", amount: 5000, currency: "USD", status: "concluído", date: "2024-01-12T13:30:00", plan: "Plano Ouro" },
+  // { id: "TX007", type: "lucro", amount: 1600, currency: "USD", status: "concluído", date: "2024-01-18T10:00:00", plan: "Plano Ouro" },
+  // { id: "TX008", type: "indicação", amount: 250, currency: "USD", status: "concluído", date: "2024-01-19T08:30:00", from: "Sarah Johnson" }
 ];
 
 export const mockActiveInvestments = [
-  // { id: "INV001", plan: "Silver Plan", amount: 3000, startDate: "2024-01-16", endDate: "2024-03-16", profit: 540, status: "active", roi: 18 },
-  // { id: "INV002", plan: "Gold Plan", amount: 5000, startDate: "2024-01-12", endDate: "2024-04-12", profit: 1600, status: "active", roi: 32 }
+  // { id: "INV001", plan: "Plano Prata", amount: 3000, startDate: "2024-01-16", endDate: "2024-03-16", profit: 540, status: "ativo", roi: 18 },
+  // { id: "INV002", plan: "Plano Ouro", amount: 5000, startDate: "2024-01-12", endDate: "2024-04-12", profit: 1600, status: "ativo", roi: 32 }
 ];
 
 export const mockReferrals = [
-  // { id: "REF001", name: "Mike Peterson", email: "mike@example.com", date: "2024-01-10", investment: 2000, commission: 100 },
-  // { id: "REF002", name: "Sarah Johnson", email: "sarah@example.com", date: "2024-01-12", investment: 5000, commission: 250 },
-  // { id: "REF003", name: "David Wilson", email: "david@example.com", date: "2024-01-15", investment: 1500, commission: 75 },
-  // { id: "REF004", name: "Emily Brown", email: "emily@example.com", date: "2024-01-18", investment: 3500, commission: 175 }
+  // { id: "REF001", name: "Mike Peterson", email: "mike@exemplo.com", date: "2024-01-10", investment: 2000, commission: 100 },
+  // { id: "REF002", name: "Sarah Johnson", email: "sarah@exemplo.com", date: "2024-01-12", investment: 5000, commission: 250 },
+  // { id: "REF003", name: "David Wilson", email: "david@exemplo.com", date: "2024-01-15", investment: 1500, commission: 75 },
+  // { id: "REF004", name: "Emily Brown", email: "emily@exemplo.com", date: "2024-01-18", investment: 3500, commission: 175 }
 ];
 
 export const mockNotifications = [
-  // { id: 1, title: "Investment Profit Credited", message: "You've received $540 profit from your Silver Plan", time: "2 hours ago", read: false, type: "profit" },
-  // { id: 2, title: "Deposit Confirmed", message: "Your deposit of $5,000 has been confirmed", time: "1 day ago", read: false, type: "deposit" },
-  // { id: 3, title: "Welcome Bonus", message: "Congratulations! You've received a $50 welcome bonus", time: "2 days ago", read: true, type: "bonus" },
-  // { id: 4, title: "Security Alert", message: "New login detected from Chrome browser", time: "3 days ago", read: true, type: "security" }
+  // { id: 1, title: "Lucro de Investimento Creditado", message: "Você recebeu $540 de lucro do seu Plano Prata", time: "2 horas atrás", read: false, type: "profit" },
+  // { id: 2, title: "Depósito Confirmado", message: "Seu depósito de $5.000 foi confirmado", time: "1 dia atrás", read: false, type: "deposit" },
+  // { id: 3, title: "Bônus de Boas-Vindas", message: "Parabéns! Você recebeu um bônus de boas-vindas de $50", time: "2 dias atrás", read: true, type: "bonus" },
+  // { id: 4, title: "Alerta de Segurança", message: "Novo login detectado no navegador Chrome", time: "3 dias atrás", read: true, type: "security" }
 ];
 
 export const mockLivePayouts = [
-  // { id: 1, user: "User***123", amount: 1250, plan: "Gold Plan", time: "Just now" },
-  // { id: 2, user: "Trader***456", amount: 850, plan: "Silver Plan", time: "2 minutes ago" },
-  // { id: 3, user: "Crypto***789", amount: 3200, plan: "Platinum Plan", time: "5 minutes ago" },
-  // { id: 4, user: "Invest***234", amount: 500, plan: "Bronze Plan", time: "8 minutes ago" },
-  // { id: 5, user: "Wealth***567", amount: 2100, plan: "Diamond Plan", time: "12 minutes ago" }
+  // { id: 1, user: "Usuário***123", amount: 1250, plan: "Plano Ouro", time: "Agora mesmo" },
+  // { id: 2, user: "Trader***456", amount: 850, plan: "Plano Prata", time: "2 minutos atrás" },
+  // { id: 3, user: "Crypto***789", amount: 3200, plan: "Plano Platina", time: "5 minutos atrás" },
+  // { id: 4, user: "Invest***234", amount: 500, plan: "Plano Bronze", time: "8 minutos atrás" },
+  // { id: 5, user: "Wealth***567", amount: 2100, plan: "Plano Diamante", time: "12 minutos atrás" }
 ];
 
 export const mockSupportTickets = [
-  // { id: "TKT001", subject: "Withdrawal delay", status: "open", date: "2024-01-20", message: "My withdrawal is taking longer than expected" },
-  // { id: "TKT002", subject: "Investment plan question", status: "resolved", date: "2024-01-15", message: "Can I upgrade my plan?" }
+  // { id: "TKT001", subject: "Atraso no saque", status: "aberto", date: "2024-01-20", message: "Meu saque está demorando mais do que o esperado" },
+  // { id: "TKT002", subject: "Dúvida sobre plano de investimento", status: "resolvido", date: "2024-01-15", message: "Posso fazer upgrade do meu plano?" }
 ];
 
 export const mockMarketData = {
   totalVolume: "2.4B",
-  activeUsers: "25,847",
+  activeUsers: "25.847",
   totalInvested: "125.5M",
   totalPaid: "98.2M"
 };
 
 export const depositMethods = [
-  { id: "usdt", name: "USDT (TRC20)", min: 50, max: 100000, fee: 0, processingTime: "5-30 minutes" },
-  { id: "btc", name: "Bitcoin (BTC)", min: 100, max: 100000, fee: 0, processingTime: "30-60 minutes" },
-  { id: "eth", name: "Ethereum (ETH)", min: 50, max: 100000, fee: 0, processingTime: "30-60 minutes" },
-  { id: "bank", name: "Bank Transfer", min: 500, max: 50000, fee: 0, processingTime: "1-3 business days" }
+  { id: "usdt", name: "USDT (TRC20)", min: 50, max: 100000, fee: 0, processingTime: "5-30 minutos" },
+  { id: "btc", name: "Bitcoin (BTC)", min: 100, max: 100000, fee: 0, processingTime: "30-60 minutos" },
+  { id: "eth", name: "Ethereum (ETH)", min: 50, max: 100000, fee: 0, processingTime: "30-60 minutos" },
+  { id: "bank", name: "Transferência Bancária", min: 500, max: 50000, fee: 0, processingTime: "1-3 dias úteis" }
 ];
 
 export const withdrawalMethods = [
-  { id: "usdt", name: "USDT (TRC20)", min: 50, max: 50000, fee: 1, processingTime: "24-48 hours" },
-  { id: "btc", name: "Bitcoin (BTC)", min: 100, max: 50000, fee: 0.0005, processingTime: "24-48 hours" },
-  { id: "eth", name: "Ethereum (ETH)", min: 50, max: 50000, fee: 0.005, processingTime: "24-48 hours" }
+  { id: "usdt", name: "USDT (TRC20)", min: 50, max: 50000, fee: 1, processingTime: "24-48 horas" },
+  { id: "btc", name: "Bitcoin (BTC)", min: 100, max: 50000, fee: 0.0005, processingTime: "24-48 horas" },
+  { id: "eth", name: "Ethereum (ETH)", min: 50, max: 50000, fee: 0.005, processingTime: "24-48 horas" }
 ];

@@ -26,7 +26,7 @@ const Settings = () => {
   const fetchSettings = async () => {
     try {
       setLoading(true);
-      // Fetch user profile which contains settings
+      // Buscar o perfil do usuário que contém as configurações
       const response = await API.get('/users/profile');
       if (response.data.success) {
         const data = response.data.data;
@@ -42,8 +42,8 @@ const Settings = () => {
         });
       }
     } catch (error) {
-      console.error('Settings fetch error:', error);
-      toast.error('Failed to load settings');
+      console.error('Erro ao buscar configurações:', error);
+      toast.error('Falha ao carregar configurações');
     } finally {
       setLoading(false);
     }
@@ -72,19 +72,19 @@ const Settings = () => {
         },
       });
       if (response.data.success) {
-        toast.success('Settings saved successfully!');
-        // Update user context if currency changed
+        toast.success('Configurações salvas com sucesso!');
+        // Atualizar o contexto do usuário se a moeda tiver mudado
         if (settings.currency !== user?.currency) {
           updateUser({ currency: settings.currency });
         }
-        // Also update theme
+        // Também atualizar o tema
         if (settings.darkMode !== user?.settings?.darkMode) {
-          // Theme will be applied globally (if needed)
+          // O tema será aplicado globalmente (se necessário)
         }
       }
     } catch (error) {
-      console.error('Settings save error:', error);
-      toast.error(error.response?.data?.message || 'Failed to save settings');
+      console.error('Erro ao salvar configurações:', error);
+      toast.error(error.response?.data?.message || 'Falha ao salvar configurações');
     } finally {
       setSaving(false);
     }
@@ -97,7 +97,7 @@ const Settings = () => {
         <main className="p-4 sm:p-6">
           <div className="flex items-center justify-center h-64">
             <FaSpinner className="w-12 h-12 text-blue-500 animate-spin mx-auto mb-4" />
-            <p className="text-slate-400">Loading settings...</p>
+            <p className="text-slate-400">Carregando configurações...</p>
           </div>
         </main>
       </div>
@@ -110,23 +110,23 @@ const Settings = () => {
       
       <main className="p-4 sm:p-6">
         <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">Settings</h1>
-          <p className="text-slate-400 mt-1">Manage your account preferences</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">Configurações</h1>
+          <p className="text-slate-400 mt-1">Gerencie as preferências da sua conta</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-5xl">
-          {/* Notification Settings */}
+          {/* Preferências de Notificação */}
           <div className="bg-slate-800 rounded-2xl p-6">
             <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
               <FaBell className="text-blue-400" />
-              Notification Preferences
+              Preferências de Notificação
             </h2>
             
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="text-white font-medium">Email Notifications</p>
-                  <p className="text-xs text-slate-400">Receive updates via email</p>
+                  <p className="text-white font-medium">Notificações por E-mail</p>
+                  <p className="text-xs text-slate-400">Receba atualizações por e-mail</p>
                 </div>
                 <button
                   onClick={() => handleToggle('emailNotifications')}
@@ -142,8 +142,8 @@ const Settings = () => {
 
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="text-white font-medium">Push Notifications</p>
-                  <p className="text-xs text-slate-400">Browser push notifications</p>
+                  <p className="text-white font-medium">Notificações Push</p>
+                  <p className="text-xs text-slate-400">Notificações push do navegador</p>
                 </div>
                 <button
                   onClick={() => handleToggle('pushNotifications')}
@@ -159,8 +159,8 @@ const Settings = () => {
 
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="text-white font-medium">SMS Alerts</p>
-                  <p className="text-xs text-slate-400">Receive SMS for important events</p>
+                  <p className="text-white font-medium">Alertas por SMS</p>
+                  <p className="text-xs text-slate-400">Receba SMS para eventos importantes</p>
                 </div>
                 <button
                   onClick={() => handleToggle('smsAlerts')}
@@ -176,18 +176,18 @@ const Settings = () => {
             </div>
           </div>
 
-          {/* Appearance Settings */}
+          {/* Aparência */}
           <div className="bg-slate-800 rounded-2xl p-6">
             <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
               <FaMoon className="text-blue-400" />
-              Appearance
+              Aparência
             </h2>
             
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="text-white font-medium">Dark Mode</p>
-                  <p className="text-xs text-slate-400">Switch between light and dark theme</p>
+                  <p className="text-white font-medium">Modo Escuro</p>
+                  <p className="text-xs text-slate-400">Alternar entre tema claro e escuro</p>
                 </div>
                 <button
                   onClick={() => handleToggle('darkMode')}
@@ -203,66 +203,66 @@ const Settings = () => {
             </div>
           </div>
 
-          {/* Language & Currency */}
+          {/* Idioma e Moeda */}
           <div className="bg-slate-800 rounded-2xl p-6">
             <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
               <FaLanguage className="text-blue-400" />
-              Language & Currency
+              Idioma e Moeda
             </h2>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-slate-400 text-sm mb-2">Language</label>
+                <label className="block text-slate-400 text-sm mb-2">Idioma</label>
                 <select
                   name="language"
                   value={settings.language}
                   onChange={handleChange}
                   className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
                 >
-                  <option value="en">English</option>
-                  <option value="es">Español</option>
-                  <option value="fr">Français</option>
-                  <option value="de">Deutsch</option>
-                  <option value="zh">中文</option>
+                  <option value="en">Inglês</option>
+                  <option value="es">Espanhol</option>
+                  <option value="fr">Francês</option>
+                  <option value="de">Alemão</option>
+                  <option value="zh">Chinês</option>
                   <option value="pt">Português</option>
-                  <option value="ar">العربية</option>
+                  <option value="ar">Árabe</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-slate-400 text-sm mb-2">Currency</label>
+                <label className="block text-slate-400 text-sm mb-2">Moeda</label>
                 <select
                   name="currency"
                   value={settings.currency}
                   onChange={handleChange}
                   className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
                 >
-                  <option value="USD">USD - US Dollar</option>
+                  <option value="USD">USD - Dólar Americano</option>
                   <option value="EUR">EUR - Euro</option>
-                  <option value="GBP">GBP - British Pound</option>
-                  <option value="CAD">CAD - Canadian Dollar</option>
-                  <option value="AUD">AUD - Australian Dollar</option>
-                  <option value="JPY">JPY - Japanese Yen</option>
-                  <option value="NGN">NGN - Nigerian Naira</option>
-                  <option value="BRL">BRL - Brazilian Real</option>
-                  <option value="INR">INR - Indian Rupee</option>
+                  <option value="GBP">GBP - Libra Esterlina</option>
+                  <option value="CAD">CAD - Dólar Canadense</option>
+                  <option value="AUD">AUD - Dólar Australiano</option>
+                  <option value="JPY">JPY - Iene Japonês</option>
+                  <option value="NGN">NGN - Naira Nigeriana</option>
+                  <option value="BRL">BRL - Real Brasileiro</option>
+                  <option value="INR">INR - Rúpia Indiana</option>
                 </select>
               </div>
             </div>
           </div>
 
-          {/* Security Preferences */}
+          {/* Preferências de Segurança */}
           <div className="bg-slate-800 rounded-2xl p-6">
             <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
               <FaGlobe className="text-blue-400" />
-              Security Preferences
+              Preferências de Segurança
             </h2>
             
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="text-white font-medium">Two-Factor Authentication</p>
-                  <p className="text-xs text-slate-400">Add extra security to your account</p>
+                  <p className="text-white font-medium">Autenticação de Dois Fatores</p>
+                  <p className="text-xs text-slate-400">Adicione segurança extra à sua conta</p>
                 </div>
                 <button
                   onClick={() => handleToggle('twoFactor')}
@@ -279,7 +279,7 @@ const Settings = () => {
           </div>
         </div>
 
-        {/* Save Button */}
+        {/* Botão Salvar */}
         <div className="mt-8 max-w-5xl">
           <button
             onClick={saveSettings}
@@ -287,7 +287,7 @@ const Settings = () => {
             className="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:opacity-90 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {saving ? <FaSpinner className="animate-spin" /> : <FaSave />}
-            {saving ? 'Saving...' : 'Save All Settings'}
+            {saving ? 'Salvando...' : 'Salvar Todas as Configurações'}
           </button>
         </div>
       </main>

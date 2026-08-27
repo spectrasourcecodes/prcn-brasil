@@ -32,25 +32,25 @@ const Security = () => {
         setTwoFactorEnabled(userSettings.twoFactor || data.twoFactorEnabled || false);
       }
     } catch (error) {
-      console.error('Security settings fetch error:', error);
-      toast.error('Failed to load security settings');
+      console.error('Erro ao buscar configurações de segurança:', error);
+      toast.error('Falha ao carregar configurações de segurança');
     } finally {
       setLoading(false);
     }
   };
 
   const handlePasswordChange = async () => {
-    // Validation
+    // Validação
     if (!currentPassword || !newPassword || !confirmPassword) {
-      toast.error('Please fill all fields');
+      toast.error('Preencha todos os campos');
       return;
     }
     if (newPassword !== confirmPassword) {
-      toast.error('Passwords do not match');
+      toast.error('As senhas não coincidem');
       return;
     }
     if (newPassword.length < 6) {
-      toast.error('Password must be at least 6 characters');
+      toast.error('A senha deve ter pelo menos 6 caracteres');
       return;
     }
 
@@ -61,18 +61,18 @@ const Security = () => {
         newPassword,
       });
       if (response.data.success) {
-        toast.success('Password changed successfully!');
+        toast.success('Senha alterada com sucesso!');
         setCurrentPassword('');
         setNewPassword('');
         setConfirmPassword('');
       }
     } catch (error) {
-      console.error('Password change error:', error);
-      // Check if error is due to incorrect current password
+      console.error('Erro ao alterar senha:', error);
+      // Verifica se o erro é devido à senha atual incorreta
       const status = error.response?.status;
-      const message = error.response?.data?.message || 'Failed to change password';
+      const message = error.response?.data?.message || 'Falha ao alterar a senha';
       if (status === 401) {
-        toast.error('Current password is incorrect. Please try again.');
+        toast.error('Senha atual incorreta. Tente novamente.');
       } else {
         toast.error(message);
       }
@@ -87,13 +87,13 @@ const Security = () => {
       const response = await API.post('/users/2fa/enable');
       if (response.data.success) {
         setTwoFactorEnabled(true);
-        toast.success('2FA has been enabled!');
+        toast.success('2FA foi ativado!');
       }
     } catch (error) {
-      console.error('2FA enable error:', error);
-      // Fallback: toggle locally if endpoint not available
+      console.error('Erro ao ativar 2FA:', error);
+      // Fallback: alterna localmente se o endpoint não estiver disponível
       setTwoFactorEnabled(true);
-      toast.success('2FA enabled locally. API endpoint not implemented yet.');
+      toast.success('2FA ativado localmente. Endpoint da API ainda não implementado.');
     } finally {
       setSaving(false);
     }
@@ -105,36 +105,36 @@ const Security = () => {
       const response = await API.post('/users/2fa/disable');
       if (response.data.success) {
         setTwoFactorEnabled(false);
-        toast.success('2FA has been disabled');
+        toast.success('2FA foi desativado');
       }
     } catch (error) {
-      console.error('2FA disable error:', error);
+      console.error('Erro ao desativar 2FA:', error);
       setTwoFactorEnabled(false);
-      toast.success('2FA disabled locally. API endpoint not implemented yet.');
+      toast.success('2FA desativado localmente. Endpoint da API ainda não implementado.');
     } finally {
       setSaving(false);
     }
   };
 
-  // Logout All Devices – clears all sessions
+  // Sair de todos os dispositivos – limpa todas as sessões
   const handleLogoutAllDevices = () => {
-    if (window.confirm('Are you sure you want to log out of all devices? This will clear all sessions.')) {
-      // Clear all local storage and session storage
+    if (window.confirm('Tem certeza que deseja sair de todos os dispositivos? Isso limpará todas as sessões.')) {
+      // Limpa todo o localStorage e sessionStorage
       localStorage.clear();
       sessionStorage.clear();
-      // Also call logout from auth context
+      // Também chama o logout do contexto de autenticação
       logout();
-      // Navigate to login page
+      // Redireciona para a página de login
       window.location.href = '/login';
-      toast.success('Logged out of all devices');
+      toast.success('Saiu de todos os dispositivos');
     }
   };
 
   const securityItems = [
     {
       icon: FaShieldAlt,
-      title: 'Two-Factor Authentication',
-      description: 'Add an extra layer of security to your account',
+      title: 'Autenticação de Dois Fatores',
+      description: 'Adicione uma camada extra de segurança à sua conta',
       action: twoFactorEnabled ? (
         <button
           onClick={handleDisable2FA}
@@ -142,7 +142,7 @@ const Security = () => {
           className="flex items-center gap-2 px-4 py-2 bg-red-600/20 text-red-400 rounded-lg hover:bg-red-600/30 transition disabled:opacity-50"
         >
           {saving ? <FaSpinner className="animate-spin" /> : <FaTimesCircle />}
-          Disable
+          Desativar
         </button>
       ) : (
         <button
@@ -150,32 +150,32 @@ const Security = () => {
           disabled={saving}
           className="px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700 transition disabled:opacity-50 flex items-center gap-2"
         >
-          {saving ? <FaSpinner className="animate-spin" /> : 'Enable'}
+          {saving ? <FaSpinner className="animate-spin" /> : 'Ativar'}
         </button>
       ),
       status: twoFactorEnabled && (
         <span className="flex items-center gap-2 text-green-500 text-sm">
-          <FaCheckCircle /> Enabled
+          <FaCheckCircle /> Ativado
         </span>
       ),
     },
     {
       icon: FaMobileAlt,
-      title: 'SMS Alerts',
-      description: 'Receive security alerts via SMS',
+      title: 'Alertas por SMS',
+      description: 'Receba alertas de segurança via SMS',
       action: (
         <button className="px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700 transition">
-          Configure
+          Configurar
         </button>
       ),
     },
     {
       icon: FaEnvelope,
-      title: 'Email Notifications',
-      description: 'Get notified about account activities',
+      title: 'Notificações por E-mail',
+      description: 'Receba notificações sobre atividades da conta',
       action: (
         <button className="px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700 transition">
-          Manage
+          Gerenciar
         </button>
       ),
     },
@@ -188,7 +188,7 @@ const Security = () => {
         <main className="p-4 sm:p-6">
           <div className="flex items-center justify-center h-64">
             <FaSpinner className="w-12 h-12 text-blue-500 animate-spin mx-auto mb-4" />
-            <p className="text-slate-400">Loading security settings...</p>
+            <p className="text-slate-400">Carregando configurações de segurança...</p>
           </div>
         </main>
       </div>
@@ -201,14 +201,14 @@ const Security = () => {
       
       <main className="p-4 sm:p-6">
         <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">Security Settings</h1>
-          <p className="text-slate-400 mt-1">Protect your account with advanced security features</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">Configurações de Segurança</h1>
+          <p className="text-slate-400 mt-1">Proteja sua conta com recursos avançados de segurança</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Security Features */}
+          {/* Recursos de Segurança */}
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-white mb-4">Security Features</h2>
+            <h2 className="text-lg font-semibold text-white mb-4">Recursos de Segurança</h2>
             {securityItems.map((item, index) => (
               <div key={index} className="bg-slate-800 rounded-xl p-4">
                 <div className="flex items-start justify-between">
@@ -225,17 +225,17 @@ const Security = () => {
             ))}
           </div>
 
-          {/* Change Password */}
+          {/* Alterar Senha */}
           <div>
             <div className="bg-slate-800 rounded-2xl p-6">
               <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                 <FaLock className="text-blue-400" />
-                Change Password
+                Alterar Senha
               </h2>
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-slate-400 text-sm mb-2">Current Password</label>
+                  <label className="block text-slate-400 text-sm mb-2">Senha Atual</label>
                   <input
                     type="password"
                     value={currentPassword}
@@ -246,7 +246,7 @@ const Security = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-slate-400 text-sm mb-2">New Password</label>
+                  <label className="block text-slate-400 text-sm mb-2">Nova Senha</label>
                   <input
                     type="password"
                     value={newPassword}
@@ -257,7 +257,7 @@ const Security = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-slate-400 text-sm mb-2">Confirm New Password</label>
+                  <label className="block text-slate-400 text-sm mb-2">Confirmar Nova Senha</label>
                   <input
                     type="password"
                     value={confirmPassword}
@@ -273,25 +273,25 @@ const Security = () => {
                   className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {changingPassword ? <FaSpinner className="animate-spin" /> : <FaKey />}
-                  {changingPassword ? 'Updating...' : 'Update Password'}
+                  {changingPassword ? 'Atualizando...' : 'Atualizar Senha'}
                 </button>
               </div>
             </div>
 
-            {/* Session Management */}
+            {/* Gerenciamento de Sessões */}
             <div className="bg-slate-800 rounded-2xl p-6 mt-6">
               <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                 <FaKey className="text-blue-400" />
-                Active Sessions
+                Sessões Ativas
               </h2>
               
               <div className="space-y-3">
                 <div className="flex justify-between items-center p-3 bg-slate-700/50 rounded-lg">
                   <div>
-                    <p className="text-sm text-white">Current session</p>
-                    <p className="text-xs text-slate-400">Last active: just now</p>
+                    <p className="text-sm text-white">Sessão atual</p>
+                    <p className="text-xs text-slate-400">Última atividade: agora mesmo</p>
                   </div>
-                  <span className="text-green-500 text-sm">Active</span>
+                  <span className="text-green-500 text-sm">Ativa</span>
                 </div>
               </div>
               
@@ -299,7 +299,7 @@ const Security = () => {
                 onClick={handleLogoutAllDevices}
                 className="w-full mt-4 py-2 rounded-lg bg-red-600/20 text-red-500 font-semibold hover:bg-red-600/30 transition flex items-center justify-center gap-2"
               >
-                <FaSignOutAlt /> Logout All Devices
+                <FaSignOutAlt /> Sair de Todos os Dispositivos
               </button>
             </div>
           </div>

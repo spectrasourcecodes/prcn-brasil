@@ -23,7 +23,7 @@ const Dashboard = () => {
   const [showBalance, setShowBalance] = useState(true);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Get currency symbol
+  // ✅ Obtém o símbolo da moeda
   const currencySymbol = getCurrencySymbol(user?.currency);
 
   useEffect(() => {
@@ -42,17 +42,17 @@ const Dashboard = () => {
           totalDeposits: data.wallet?.totalDeposits || 0,
           totalWithdrawals: data.wallet?.totalWithdrawals || 0,
           walletAddress: data.wallet?.walletAddress || '0x...',
-          userId: { name: user?.fullName || 'User' },
+          userId: { name: user?.fullName || 'Usuário' },
         };
         setWallet(mappedWallet);
         setActiveInvestments(data.investments || []);
         setRecentTransactions(data.transactions || []);
       } else {
-        toast.error('Failed to load dashboard');
+        toast.error('Falha ao carregar o painel');
       }
     } catch (error) {
-      console.error('Dashboard fetch error:', error);
-      toast.error(error.response?.data?.message || 'Failed to load dashboard');
+      console.error('Erro ao buscar dados do dashboard:', error);
+      toast.error(error.response?.data?.message || 'Falha ao carregar o painel');
     } finally {
       setLoading(false);
     }
@@ -64,20 +64,20 @@ const Dashboard = () => {
     totalDeposits: 0,
     totalWithdrawals: 0,
     walletAddress: '0x...',
-    userId: { name: user?.fullName || 'User' },
+    userId: { name: user?.fullName || 'Usuário' },
   };
 
   const walletData = wallet || fallbackWallet;
 
-  const chartLabels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+  const chartLabels = ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'];
   const chartData = [12450, 15800, 14200, 18900];
 
   const copyAddress = () => {
     navigator.clipboard.writeText(walletData.walletAddress || '');
-    toast.success('Wallet address copied!');
+    toast.success('Endereço da carteira copiado!');
   };
 
-  // ✅ Format currency with symbol
+  // ✅ Formata valor com o símbolo da moeda
   const formatCurrency = (value) => {
     return `${currencySymbol}${value?.toLocaleString() || '0.00'}`;
   };
@@ -98,13 +98,13 @@ const Dashboard = () => {
         <div className="mb-6">
           <div className="flex flex-wrap justify-between items-center gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">Dashboard</h1>
-              <p className="text-slate-400 mt-1">Welcome back, {walletData.userId?.name || 'User'}!</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white">Painel</h1>
+              <p className="text-slate-400 mt-1">Bem-vindo de volta, {walletData.userId?.name || 'Usuário'}!</p>
             </div>
             <button 
               onClick={() => setShowBalance(!showBalance)}
               className="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 transition"
-              aria-label={showBalance ? 'Hide balance' : 'Show balance'}
+              aria-label={showBalance ? 'Ocultar saldo' : 'Mostrar saldo'}
             >
               {showBalance ? (
                 <FaEye className="text-slate-400 w-5 h-5" />
@@ -115,10 +115,10 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Stats Grid */}
+        {/* Grade de Estatísticas */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <StatCard 
-            title="Total Balance" 
+            title="Saldo Total" 
             value={walletData.totalBalance || 0} 
             icon={FaWallet}
             bgGradient="from-blue-600/20 to-blue-800/20"
@@ -126,7 +126,7 @@ const Dashboard = () => {
             currencySymbol={currencySymbol}
           />
           <StatCard 
-            title="Total Profit" 
+            title="Lucro Total" 
             value={walletData.totalProfit || 0} 
             icon={FaChartLine}
             change={walletData.totalProfit > 0 ? 12.5 : 0}
@@ -136,7 +136,7 @@ const Dashboard = () => {
             currencySymbol={currencySymbol}
           />
           <StatCard 
-            title="Total Deposits" 
+            title="Total de Depósitos" 
             value={walletData.totalDeposits || 0} 
             icon={FaMoneyBillWave}
             bgGradient="from-purple-600/20 to-purple-800/20"
@@ -144,7 +144,7 @@ const Dashboard = () => {
             currencySymbol={currencySymbol}
           />
           <StatCard 
-            title="Total Withdrawals" 
+            title="Total de Saques" 
             value={walletData.totalWithdrawals || 0} 
             icon={FaExchangeAlt}
             bgGradient="from-orange-600/20 to-orange-800/20"
@@ -153,44 +153,44 @@ const Dashboard = () => {
           />
         </div>
 
-        {/* Chart & Quick Actions */}
+        {/* Gráfico e Ações Rápidas */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <div className="lg:col-span-2">
             <ChartCard 
-              title="Portfolio Growth" 
+              title="Crescimento da Carteira" 
               data={chartData} 
               labels={chartLabels}
             />
           </div>
           
           <div className="bg-slate-800 rounded-2xl p-6 shadow-xl">
-            <h3 className="text-lg font-bold text-white mb-4">Quick Actions</h3>
+            <h3 className="text-lg font-bold text-white mb-4">Ações Rápidas</h3>
             <div className="grid grid-cols-2 gap-4 mb-6">
               <button 
                 onClick={() => navigate('/deposit')}
                 className="p-4 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 hover:scale-105"
               >
                 <FaArrowUp className="mx-auto mb-2 text-white text-xl" />
-                <span className="text-white font-semibold">Deposit</span>
+                <span className="text-white font-semibold">Depositar</span>
               </button>
               <button 
                 onClick={() => navigate('/withdraw')}
                 className="p-4 bg-gradient-to-r from-orange-600 to-orange-700 rounded-xl hover:from-orange-700 hover:to-orange-800 transition-all duration-200 hover:scale-105"
               >
                 <FaArrowDown className="mx-auto mb-2 text-white text-xl" />
-                <span className="text-white font-semibold">Withdraw</span>
+                <span className="text-white font-semibold">Sacar</span>
               </button>
             </div>
             <div className="bg-slate-700/50 rounded-xl p-4">
-              <p className="text-slate-400 text-sm mb-2">Your Wallet Address</p>
+              <p className="text-slate-400 text-sm mb-2">Seu endereço de carteira</p>
               <div className="flex items-center justify-between gap-2">
                 <code className="text-xs text-white truncate font-mono">
-                  {walletData.walletAddress || 'No address'}
+                  {walletData.walletAddress || 'Sem endereço'}
                 </code>
                 <button 
                   onClick={copyAddress} 
                   className="p-2 bg-slate-600 rounded-lg hover:bg-slate-500 transition flex-shrink-0"
-                  title="Copy address"
+                  title="Copiar endereço"
                 >
                   <FaCopy className="text-white text-sm" />
                 </button>
@@ -199,17 +199,17 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Active Investments */}
+        {/* Investimentos Ativos */}
         <div className="mb-6">
-          <h2 className="text-xl font-bold text-white mb-4">Active Investments</h2>
+          <h2 className="text-xl font-bold text-white mb-4">Investimentos Ativos</h2>
           {activeInvestments.length === 0 ? (
             <div className="bg-slate-800/50 rounded-xl p-8 text-center border border-slate-700">
-              <p className="text-slate-400">No active investments. Start investing today!</p>
+              <p className="text-slate-400">Nenhum investimento ativo. Comece a investir hoje!</p>
               <button 
                 onClick={() => navigate('/plans')}
                 className="mt-3 px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:opacity-90 transition"
               >
-                View Plans
+                Ver Planos
               </button>
             </div>
           ) : (
@@ -225,18 +225,18 @@ const Dashboard = () => {
                   <div className="flex justify-between items-start mb-3">
                     <div>
                       <h3 className="font-bold text-white">
-                        {investment.plan?.name || investment.planName || 'Investment'}
+                        {investment.plan?.name || investment.planName || 'Investimento'}
                       </h3>
                       <p className="text-xs text-slate-400">
-                        Started: {investment.startDate ? new Date(investment.startDate).toLocaleDateString() : 'N/A'}
+                        Iniciado em: {investment.startDate ? new Date(investment.startDate).toLocaleDateString('pt-BR') : 'N/A'}
                       </p>
                     </div>
                     <span className="px-2 py-1 bg-green-500/20 text-green-500 rounded-lg text-xs font-medium">
-                      Active
+                      Ativo
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-400">Amount:</span>
+                    <span className="text-slate-400">Valor:</span>
                     <span className="text-white font-semibold">
                       {formatCurrency(investment.amount || 0)}
                     </span>
@@ -248,7 +248,7 @@ const Dashboard = () => {
                     </span>
                   </div>
                   <div className="flex justify-between text-sm mt-1">
-                    <span className="text-slate-400">Total ROI:</span>
+                    <span className="text-slate-400">ROI Total:</span>
                     <span className="text-accent font-medium">
                       {formatCurrency(investment.totalROI || 0)}
                     </span>
@@ -259,20 +259,20 @@ const Dashboard = () => {
           )}
         </div>
 
-        {/* Recent Transactions */}
+        {/* Transações Recentes */}
         <div>
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-white">Recent Transactions</h2>
+            <h2 className="text-xl font-bold text-white">Transações Recentes</h2>
             <button 
               onClick={() => navigate('/transactions')}
               className="text-blue-400 hover:text-blue-300 text-sm transition-colors flex items-center gap-1"
             >
-              View All →
+              Ver Todas →
             </button>
           </div>
           {recentTransactions.length === 0 ? (
             <div className="bg-slate-800/50 rounded-xl p-8 text-center border border-slate-700">
-              <p className="text-slate-400">No transactions yet.</p>
+              <p className="text-slate-400">Nenhuma transação ainda.</p>
             </div>
           ) : (
             <div className="space-y-2">
