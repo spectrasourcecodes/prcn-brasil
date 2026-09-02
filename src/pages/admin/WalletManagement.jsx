@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FaSearch, FaWallet, FaPlus, FaSave, FaTimes, FaSpinner, FaArrowUp } from 'react-icons/fa';
+import { FaSearch, FaWallet, FaSave, FaTimes, FaSpinner, FaEdit } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import API from '../../utils/axios';
 
@@ -18,10 +18,13 @@ const WalletManagement = () => {
     pages: 0
   });
 
-  const [balanceForm, setBalanceForm] = useState({
-    amount: '',
-    type: 'balance',
-    action: 'add',
+  // Form state for wallet fields – directly editable values
+  const [walletForm, setWalletForm] = useState({
+    balance: '',
+    profitBalance: '',
+    referralBalance: '',
+    totalDeposits: '',
+    totalWithdrawals: '',
   });
 
   useEffect(() => {
@@ -60,15 +63,12 @@ const WalletManagement = () => {
 
   const handleViewWallet = async (userId) => {
     try {
-      // Find user from the existing list first
       const userFromList = users.find(u => u._id === userId);
-      
       if (!userFromList) {
         toast.error('User not found');
         return;
       }
-      
-      // Set selected user from the list
+
       setSelectedUser({
         _id: userFromList._id,
         fullName: userFromList.fullName || userFromList.name || 'Unknown',
@@ -76,34 +76,38 @@ const WalletManagement = () => {
         currency: userFromList.currency || 'USD',
         isActive: userFromList.isActive !== undefined ? userFromList.isActive : true,
       });
-      
-      // Fetch or create wallet
+
+      // Fetch wallet
       try {
         const walletResponse = await API.get(`/admin/users/${userId}/wallet`);
-        setWalletData(walletResponse.data.data);
+        const data = walletResponse.data.data;
+        setWalletData(data);
+        // Populate form with current values
+        setWalletForm({
+          balance: data.balance ?? '',
+          profitBalance: data.profitBalance ?? '',
+          referralBalance: data.referralBalance ?? '',
+          totalDeposits: data.totalDeposits ?? '',
+          totalWithdrawals: data.totalWithdrawals ?? '',
+        });
         setShowWalletModal(true);
       } catch (e) {
-        // If 404, create wallet
         if (e.response?.status === 404) {
+          // Wallet doesn't exist – create it
           toast.loading('Creating wallet...');
           try {
             const createResponse = await API.post(`/admin/users/${userId}/wallet`, {});
-            setWalletData(createResponse.data.data);
+            const newWallet = createResponse.data.data;
+            setWalletData(newWallet);
+            setWalletForm({
+              balance: newWallet.balance ?? '',
+              profitBalance: newWallet.profitBalance ?? '',
+              referralBalance: newWallet.referralBalance ?? '',
+              totalDeposits: newWallet.totalDeposits ?? '',
+              totalWithdrawals: newWallet.totalWithdrawals ?? '',
+            });
             toast.dismiss();
             toast.success('Wallet created successfully');
-            // Also update the user in the list with the new wallet data
-            setUsers(prevUsers => 
-              prevUsers.map(user => 
-                user._id === userId 
-                  ? { 
-                      ...user, 
-                      balance: 0,
-                      profitBalance: 0,
-                      referralBalance: 0,
-                    }
-                  : user
-              )
-            );
             setShowWalletModal(true);
           } catch (err) {
             toast.dismiss();
@@ -119,57 +123,67 @@ const WalletManagement = () => {
     }
   };
 
-  const handleUpdateBalance = async () => {
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    setWalletForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleUpdateWallet = async () => {
     if (!selectedUser || !selectedUser._id) {
-      toast.error('No user selected. Please close and reopen the wallet.');
+      toast.error('No user selected');
       return;
     }
 
-    if (!balanceForm.amount || parseFloat(balanceForm.amount) <= 0) {
-      toast.error('Please enter a valid amount');
+    // Build update object – only send fields that have a value
+    const updateData = {};
+    if (walletForm.balance !== '') updateData.balance = parseFloat(walletForm.balance);
+    if (walletForm.profitBalance !== '') updateData.profitBalance = parseFloat(walletForm.profitBalance);
+    if (walletForm.referralBalance !== '') updateData.referralBalance = parseFloat(walletForm.referralBalance);
+    if (walletForm.totalDeposits !== '') updateData.totalDeposits = parseFloat(walletForm.totalDeposits);
+    if (walletForm.totalWithdrawals !== '') updateData.totalWithdrawals = parseFloat(walletForm.totalWithdrawals);
+
+    // Validate at least one field is provided
+    if (Object.keys(updateData).length === 0) {
+      toast.error('Please enter at least one value to update');
       return;
     }
-
-    const amount = balanceForm.action === 'add' 
-      ? parseFloat(balanceForm.amount) 
-      : -parseFloat(balanceForm.amount);
 
     setUpdating(true);
     try {
-      const response = await API.post(`/admin/users/${selectedUser._id}/balance`, {
-        amount: amount,
-        type: balanceForm.type
-      });
-      
+      const response = await API.put(`/admin/users/${selectedUser._id}/wallet`, updateData);
       if (response.data.success) {
-        toast.success(`Wallet ${balanceForm.action === 'add' ? 'credited' : 'debited'} successfully`);
-        
+        toast.success('Wallet updated successfully');
         // Refresh wallet data
         const walletResponse = await API.get(`/admin/users/${selectedUser._id}/wallet`);
-        const newWalletData = walletResponse.data.data;
-        setWalletData(newWalletData);
-        
-        // ✅ UPDATE THE USER IN THE USERS LIST with new wallet data
-        setUsers(prevUsers => 
-          prevUsers.map(user => 
-            user._id === selectedUser._id 
-              ? { 
-                  ...user, 
-                  balance: newWalletData.balance,
-                  profitBalance: newWalletData.profitBalance,
-                  referralBalance: newWalletData.referralBalance,
+        const newData = walletResponse.data.data;
+        setWalletData(newData);
+        // Update form with new values
+        setWalletForm({
+          balance: newData.balance ?? '',
+          profitBalance: newData.profitBalance ?? '',
+          referralBalance: newData.referralBalance ?? '',
+          totalDeposits: newData.totalDeposits ?? '',
+          totalWithdrawals: newData.totalWithdrawals ?? '',
+        });
+        // Update user list with new wallet data
+        setUsers(prevUsers =>
+          prevUsers.map(user =>
+            user._id === selectedUser._id
+              ? {
+                  ...user,
+                  balance: newData.balance,
+                  profitBalance: newData.profitBalance,
+                  referralBalance: newData.referralBalance,
                 }
               : user
           )
         );
-        
-        setBalanceForm({ amount: '', type: 'balance', action: 'add' });
       } else {
-        toast.error(response.data.message || 'Failed to update balance');
+        toast.error(response.data.message || 'Failed to update wallet');
       }
     } catch (error) {
-      console.error('Balance update error:', error);
-      toast.error(error.response?.data?.message || 'Failed to update balance');
+      console.error('Update wallet error:', error);
+      toast.error(error.response?.data?.message || 'Failed to update wallet');
     } finally {
       setUpdating(false);
     }
@@ -232,9 +246,6 @@ const WalletManagement = () => {
               <tr className="bg-slate-700">
                 <th className="text-left py-3 px-4 text-slate-300 font-medium">User</th>
                 <th className="text-left py-3 px-4 text-slate-300 font-medium">Email</th>
-                {/* <th className="text-left py-3 px-4 text-slate-300 font-medium">Balance</th>
-                <th className="text-left py-3 px-4 text-slate-300 font-medium">Profit</th>
-                <th className="text-left py-3 px-4 text-slate-300 font-medium">Referral</th> */}
                 <th className="text-left py-3 px-4 text-slate-300 font-medium">Status</th>
                 <th className="text-center py-3 px-4 text-slate-300 font-medium">Actions</th>
               </tr>
@@ -249,15 +260,6 @@ const WalletManagement = () => {
                       </div>
                     </td>
                     <td className="py-3 px-4 text-slate-400">{user.email}</td>
-                    {/* <td className="py-3 px-4 text-white font-semibold">
-                      ${(user.balance || user.wallet?.balance || 0).toLocaleString()}
-                    </td>
-                    <td className="py-3 px-4 text-green-400">
-                      ${(user.profitBalance || user.wallet?.profitBalance || 0).toLocaleString()}
-                    </td>
-                    <td className="py-3 px-4 text-yellow-400">
-                      ${(user.referralBalance || user.wallet?.referralBalance || 0).toLocaleString()}
-                    </td> */}
                     <td className="py-3 px-4">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(user.isActive)}`}>
                         {getStatusText(user.isActive)}
@@ -278,7 +280,7 @@ const WalletManagement = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="7" className="py-8 text-center text-slate-400">
+                  <td colSpan="4" className="py-8 text-center text-slate-400">
                     No users found
                   </td>
                 </tr>
@@ -339,7 +341,7 @@ const WalletManagement = () => {
             </div>
 
             <div className="p-6 space-y-6">
-              {/* Wallet Overview */}
+              {/* Current Wallet Overview (Read-only) */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 text-center">
                   <p className="text-sm text-slate-400">Balance</p>
@@ -361,128 +363,96 @@ const WalletManagement = () => {
                 </div>
               </div>
 
-              {/* Balance Update Form */}
+              {/* Update Wallet Form – Direct Input */}
               <div className="bg-slate-700/30 rounded-lg p-4">
-                <h3 className="text-sm font-semibold text-white mb-3">Update Balance</h3>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <h3 className="text-sm font-semibold text-white mb-3">Update Wallet Fields (Direct Input)</h3>
+                <p className="text-xs text-slate-400 mb-3">
+                  Enter the new values for the fields you want to update. Leave blank to keep the current value.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs text-slate-400 mb-1">Type</label>
-                    <select
-                      value={balanceForm.type}
-                      onChange={(e) => setBalanceForm(prev => ({ ...prev, type: e.target.value }))}
-                      className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
-                    >
-                      <option value="balance">Balance</option>
-                      <option value="profit">Profit</option>
-                      <option value="referral">Referral</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs text-slate-400 mb-1">Action</label>
-                    <select
-                      value={balanceForm.action}
-                      onChange={(e) => setBalanceForm(prev => ({ ...prev, action: e.target.value }))}
-                      className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
-                    >
-                      <option value="add">Add (+) </option>
-                      <option value="subtract">Subtract (-)</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs text-slate-400 mb-1">Amount</label>
+                    <label className="block text-xs text-slate-400 mb-1">Balance</label>
                     <input
                       type="number"
-                      value={balanceForm.amount}
-                      onChange={(e) => setBalanceForm(prev => ({ ...prev, amount: e.target.value }))}
-                      placeholder="0.00"
+                      name="balance"
+                      value={walletForm.balance}
+                      onChange={handleFormChange}
+                      placeholder="Current: 0.00"
                       step="0.01"
-                      min="0"
                       className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
                     />
                   </div>
-                  <div className="flex items-end">
-                    <button
-                      onClick={handleUpdateBalance}
-                      disabled={updating}
-                      className="w-full px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700 transition text-white disabled:opacity-50 flex items-center justify-center gap-2"
-                    >
-                      {updating ? <FaSpinner className="animate-spin" /> : <FaSave />}
-                      {updating ? 'Updating...' : 'Update'}
-                    </button>
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">Profit Balance</label>
+                    <input
+                      type="number"
+                      name="profitBalance"
+                      value={walletForm.profitBalance}
+                      onChange={handleFormChange}
+                      placeholder="Current: 0.00"
+                      step="0.01"
+                      className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">Referral Balance</label>
+                    <input
+                      type="number"
+                      name="referralBalance"
+                      value={walletForm.referralBalance}
+                      onChange={handleFormChange}
+                      placeholder="Current: 0.00"
+                      step="0.01"
+                      className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">Total Deposits</label>
+                    <input
+                      type="number"
+                      name="totalDeposits"
+                      value={walletForm.totalDeposits}
+                      onChange={handleFormChange}
+                      placeholder="Current: 0.00"
+                      step="0.01"
+                      className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-xs text-slate-400 mb-1">Total Withdrawals</label>
+                    <input
+                      type="number"
+                      name="totalWithdrawals"
+                      value={walletForm.totalWithdrawals}
+                      onChange={handleFormChange}
+                      placeholder="Current: 0.00"
+                      step="0.01"
+                      className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+                    />
                   </div>
                 </div>
               </div>
 
-              {/* Quick Actions */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <button
-                  onClick={() => {
-                    setBalanceForm({
-                      amount: '100',
-                      type: 'balance',
-                      action: 'add'
-                    });
-                    setTimeout(() => handleUpdateBalance(), 100);
-                  }}
-                  className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg hover:bg-green-500/20 transition text-center"
-                >
-                  <FaPlus className="mx-auto text-green-400 mb-1" />
-                  <span className="text-xs text-green-400">Add $100</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setBalanceForm({
-                      amount: '500',
-                      type: 'balance',
-                      action: 'add'
-                    });
-                    setTimeout(() => handleUpdateBalance(), 100);
-                  }}
-                  className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg hover:bg-green-500/20 transition text-center"
-                >
-                  <FaPlus className="mx-auto text-green-400 mb-1" />
-                  <span className="text-xs text-green-400">Add $500</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setBalanceForm({
-                      amount: '100',
-                      type: 'profit',
-                      action: 'add'
-                    });
-                    setTimeout(() => handleUpdateBalance(), 100);
-                  }}
-                  className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg hover:bg-blue-500/20 transition text-center"
-                >
-                  <FaArrowUp className="mx-auto text-blue-400 mb-1" />
-                  <span className="text-xs text-blue-400">Profit +$100</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setBalanceForm({
-                      amount: '100',
-                      type: 'referral',
-                      action: 'add'
-                    });
-                    setTimeout(() => handleUpdateBalance(), 100);
-                  }}
-                  className="p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg hover:bg-yellow-500/20 transition text-center"
-                >
-                  <FaArrowUp className="mx-auto text-yellow-400 mb-1" />
-                  <span className="text-xs text-yellow-400">Referral +$100</span>
-                </button>
-              </div>
+              {/* Save Button */}
+              <button
+                onClick={handleUpdateWallet}
+                disabled={updating}
+                className="w-full py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-semibold transition flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {updating ? <FaSpinner className="animate-spin" /> : <FaSave />}
+                {updating ? 'Updating...' : 'Save Wallet Changes'}
+              </button>
 
               {/* Wallet Details */}
               <div className="bg-slate-700/30 rounded-lg p-4">
-                <h3 className="text-sm font-semibold text-white mb-2">Wallet Details</h3>
+                <h3 className="text-sm font-semibold text-white mb-2">Wallet Details (Read-only)</h3>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>
-                    <span className="text-slate-400">Total Deposits:</span>
+                    <span className="text-slate-400">Total Deposits (recorded):</span>
                     <span className="text-white ml-2">${(walletData?.totalDeposits || 0).toLocaleString()}</span>
                   </div>
                   <div>
-                    <span className="text-slate-400">Total Withdrawals:</span>
+                    <span className="text-slate-400">Total Withdrawals (recorded):</span>
                     <span className="text-white ml-2">${(walletData?.totalWithdrawals || 0).toLocaleString()}</span>
                   </div>
                   <div>
