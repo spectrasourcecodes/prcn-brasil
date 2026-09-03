@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaBitcoin, FaEthereum, FaArrowDown, FaLock, FaTimes, FaInfoCircle } from 'react-icons/fa';
+import { FaBitcoin, FaEthereum, FaArrowDown, FaLock, FaTimes, FaInfoCircle, FaPix, FaMoneyBillWave } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import Navbar from '../components/Navbar';
 import { walletService } from '../services/walletService';
@@ -9,14 +9,14 @@ import { useAuth } from '../auth/userAuth';
 import { getCurrencySymbol } from '../utils/currency';
 import API from '../utils/axios';
 
-// ✅ CONFIGURAÇÕES DE SAQUE CODIFICADAS – limite removido
+// Withdrawal settings
 const WITHDRAWAL_SETTINGS = {
-  popupEnabled: false,      // true = mostrar popup, false = permitir saque
+  popupEnabled: false,
   popupTitle: 'Saque Restrito',
   popupMessage: 'O saque está temporariamente restrito. Entre em contato com o suporte para assistência.',
 };
 
-// ✅ CONSTANTES DE LIMITE DE SAQUE
+// Withdrawal limits
 const MIN_WITHDRAWAL = 100;
 const ACCOUNT_LIMIT = 10;
 
@@ -24,12 +24,15 @@ const Withdraw = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [amount, setAmount] = useState('');
+  const [withdrawalMethod, setWithdrawalMethod] = useState('crypto'); // 'crypto' or 'pix'
   const [crypto, setCrypto] = useState('USDT');
   const [address, setAddress] = useState('');
+  const [pixKey, setPixKey] = useState('');
+  const [pixKeyType, setPixKeyType] = useState('email'); // email, phone, cpf, random
   const [loading, setLoading] = useState(false);
   const [walletBalance, setWalletBalance] = useState(0);
   const [showLimitModal, setShowLimitModal] = useState(false);
-  const [kycStatus, setKycStatus] = useState('checking'); // 'checking', 'pending', 'verified', 'rejected'
+  const [kycStatus, setKycStatus] = useState('checking');
   const [modalTitle, setModalTitle] = useState(WITHDRAWAL_SETTINGS.popupTitle);
   const [modalMessage, setModalMessage] = useState(WITHDRAWAL_SETTINGS.popupMessage);
 
@@ -70,6 +73,13 @@ const Withdraw = () => {
     { id: 'TRX', name: 'Tron', icon: FaBitcoin, color: 'text-red-500' },
   ];
 
+  const pixKeyTypes = [
+    { value: 'email', label: 'E-mail' },
+    { value: 'phone', label: 'Telefone' },
+    { value: 'cpf', label: 'CPF' },
+    { value: 'random', label: 'Chave Aleatória' },
+  ];
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -80,13 +90,11 @@ const Withdraw = () => {
       return;
     }
 
-    // ✅ Verificação KYC – apenas usuários verificados podem sacar
     if (kycStatus !== 'verified') {
       toast.error('Verificação KYC necessária. Complete seu KYC para sacar.');
       return;
     }
 
-    // ✅ VERIFICAÇÃO DE LIMITE DE SAQUE – mostra modal de upgrade se o valor estiver fora do intervalo permitido
     if (amountNum < MIN_WITHDRAWAL || amountNum > ACCOUNT_LIMIT) {
       setModalTitle('Limite de Saque');
       setModalMessage(
@@ -96,7 +104,6 @@ const Withdraw = () => {
       return;
     }
 
-    // ✅ Verificação de popup (se ativado, mostra modal e aborta)
     if (WITHDRAWAL_SETTINGS.popupEnabled) {
       setModalTitle(WITHDRAWAL_SETTINGS.popupTitle);
       setModalMessage(WITHDRAWAL_SETTINGS.popupMessage);
@@ -104,15 +111,22 @@ const Withdraw = () => {
       return;
     }
 
-    // ✅ Verificação de saldo
     if (amountNum > walletBalance) {
       toast.error('Saldo insuficiente');
       return;
     }
 
-    if (!address) {
-      toast.error('Digite um endereço de carteira');
-      return;
+    // Validate withdrawal details based on method
+    if (withdrawalMethod === 'crypto') {
+      if (!address) {
+        toast.error('Digite um endereço de carteira');
+        return;
+      }
+    } else if (withdrawalMethod === 'pix') {
+      if (!pixKey) {
+        toast.error('Digite uma chave PIX válida');
+        return;
+      }
     }
 
     proceedWithdrawal(amountNum);
@@ -121,17 +135,30 @@ const Withdraw = () => {
   const proceedWithdrawal = async (amountNum) => {
     setLoading(true);
     try {
-      const response = await API.post('/transactions', {
+      let payload = {
         type: 'withdrawal',
         amount: amountNum,
         currency: 'USD',
-        description: `Saque para carteira ${crypto}`,
-        metadata: {
+        status: 'pending',
+      };
+
+      if (withdrawalMethod === 'crypto') {
+        payload.description = `Saque para carteira ${crypto}`;
+        payload.metadata = {
+          method: 'crypto',
           cryptoCurrency: crypto,
           walletAddress: address,
-        },
-        status: 'pending',
-      });
+        };
+      } else if (withdrawalMethod === 'pix') {
+        payload.description = 'Saque via PIX';
+        payload.metadata = {
+          method: 'pix',
+          pixKey: pixKey,
+          pixKeyType: pixKeyType,
+        };
+      }
+
+      const response = await API.post('/transactions', payload);
 
       if (response.data.success) {
         toast.success('Solicitação de saque enviada!');
@@ -175,7 +202,7 @@ const Withdraw = () => {
             </div>
           </div>
 
-          {/* Aviso de Status KYC */}
+          {/* KYC Status Warning */}
           {!isKycVerified && (
             <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-3">
               <FaLock className="text-red-500 text-sm" />
@@ -187,7 +214,6 @@ const Withdraw = () => {
             </div>
           )}
 
-          {/* Aviso de Popup (apenas quando ativado e KYC verificado) */}
           {WITHDRAWAL_SETTINGS.popupEnabled && isKycVerified && (
             <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg flex items-center gap-3">
               <FaInfoCircle className="text-blue-500 text-sm" />
@@ -196,27 +222,113 @@ const Withdraw = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Withdrawal Method Selection */}
             <div>
-              <label className="block text-slate-300 text-sm font-medium mb-2">Selecione a Criptomoeda</label>
-              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-                {cryptos.map((c) => (
-                  <button
-                    key={c.id}
-                    type="button"
-                    onClick={() => setCrypto(c.id)}
-                    className={`p-3 rounded-lg border transition ${
-                      crypto === c.id
-                        ? 'border-blue-500 bg-blue-500/10'
-                        : 'border-slate-700 hover:border-slate-500'
-                    }`}
-                  >
-                    <c.icon className={`w-6 h-6 mx-auto ${c.color}`} />
-                    <span className="text-xs text-slate-400 mt-1 block">{c.id}</span>
-                  </button>
-                ))}
+              <label className="block text-slate-300 text-sm font-medium mb-2">Método de Saque</label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setWithdrawalMethod('crypto')}
+                  className={`p-3 rounded-xl border transition ${
+                    withdrawalMethod === 'crypto'
+                      ? 'border-blue-500 bg-blue-500/10'
+                      : 'border-slate-700 hover:border-slate-500'
+                  }`}
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <FaBitcoin className="text-orange-500 text-xl" />
+                    <span className="text-white font-medium">Criptomoeda</span>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setWithdrawalMethod('pix')}
+                  className={`p-3 rounded-xl border transition ${
+                    withdrawalMethod === 'pix'
+                      ? 'border-blue-500 bg-blue-500/10'
+                      : 'border-slate-700 hover:border-slate-500'
+                  }`}
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <FaMoneyBillWave className="text-emerald-500 text-xl" />
+                    <span className="text-white font-medium">PIX</span>
+                  </div>
+                </button>
               </div>
             </div>
 
+            {/* Crypto Fields */}
+            {withdrawalMethod === 'crypto' && (
+              <>
+                <div>
+                  <label className="block text-slate-300 text-sm font-medium mb-2">Selecione a Criptomoeda</label>
+                  <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                    {cryptos.map((c) => (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => setCrypto(c.id)}
+                        className={`p-3 rounded-lg border transition ${
+                          crypto === c.id
+                            ? 'border-blue-500 bg-blue-500/10'
+                            : 'border-slate-700 hover:border-slate-500'
+                        }`}
+                      >
+                        <c.icon className={`w-6 h-6 mx-auto ${c.color}`} />
+                        <span className="text-xs text-slate-400 mt-1 block">{c.id}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-slate-300 text-sm font-medium mb-2">Endereço da Carteira</label>
+                  <input
+                    type="text"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="Digite o endereço da sua carteira"
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
+                  />
+                </div>
+              </>
+            )}
+
+            {/* PIX Fields */}
+            {withdrawalMethod === 'pix' && (
+              <>
+                <div>
+                  <label className="block text-slate-300 text-sm font-medium mb-2">Tipo de Chave PIX</label>
+                  <select
+                    value={pixKeyType}
+                    onChange={(e) => setPixKeyType(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition"
+                  >
+                    {pixKeyTypes.map((type) => (
+                      <option key={type.value} value={type.value}>
+                        {type.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-slate-300 text-sm font-medium mb-2">Chave PIX</label>
+                  <input
+                    type="text"
+                    value={pixKey}
+                    onChange={(e) => setPixKey(e.target.value)}
+                    placeholder="Digite sua chave PIX"
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
+                  />
+                  <p className="text-xs text-slate-400 mt-1">
+                    Insira o e-mail, telefone, CPF ou chave aleatória cadastrada no PIX.
+                  </p>
+                </div>
+              </>
+            )}
+
+            {/* Amount Field */}
             <div>
               <label className="block text-slate-300 text-sm font-medium mb-2">Valor ({user?.currency || 'USD'})</label>
               <div className="relative">
@@ -233,17 +345,6 @@ const Withdraw = () => {
                   className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-8 pr-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
                 />
               </div>
-            </div>
-
-            <div>
-              <label className="block text-slate-300 text-sm font-medium mb-2">Endereço da Carteira</label>
-              <input
-                type="text"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="Digite o endereço da sua carteira"
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
-              />
             </div>
 
             <button
@@ -263,7 +364,7 @@ const Withdraw = () => {
         </motion.div>
       </div>
 
-      {/* Modal de Popup de Saque */}
+      {/* Limit Modal */}
       <AnimatePresence>
         {showLimitModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
