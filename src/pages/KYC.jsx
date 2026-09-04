@@ -13,7 +13,6 @@ import API from '../utils/axios';
 // 🔑 Get the KYC verification code from environment variables
 const KYC_CODE = import.meta.env.VITE_KYC_CODE || '768564';
 
-// Função auxiliar para gerar URLs de placeholder aleatórias
 const generateRandomImageUrl = (type) => {
   const placeholders = {
     idFront: [
@@ -134,7 +133,7 @@ const KYC = () => {
     }
   };
 
-  // ✅ Updated: Verify code with server after local validation
+  // ✅ UPDATED: Verify code locally using VITE_KYC_CODE – no server call
   const handleVerifyCode = async () => {
     if (!codeInput) {
       toast.error('Por favor, insira o código de verificação');
@@ -143,34 +142,35 @@ const KYC = () => {
 
     setVerifying(true);
 
-    // ✅ Local validation (UX only – server will validate again)
-    if (codeInput !== KYC_CODE) {
+    // 🔑 Check against the frontend environment variable
+    if (codeInput === KYC_CODE) {
+      // ✅ Code is valid – update KYC status locally
+      setKycStatus('verified');
+      setShowCodeModal(false);
+      
+      // Update user context
+      if (updateUser) {
+        updateUser({ isVerified: true });
+      }
+      
+      // Optionally, update the backend to reflect the verified status
+      try {
+        // You can still notify the backend if needed, but it's optional
+        await API.post('/kyc/verify', { code: codeInput });
+      } catch (error) {
+        // If backend update fails, the local status is still updated
+        console.warn('Could not update backend, but frontend KYC is verified');
+      }
+      
+      toast.success('Verificação KYC concluída com sucesso!');
+      navigate('/withdraw');
+    } else {
+      // ❌ Code is invalid
       toast.error('Código de verificação inválido. Tente novamente.');
       setCodeInput('');
-      setVerifying(false);
-      return;
     }
 
-    // ✅ Local validation passed – send request to server to update KYC status
-    try {
-      const response = await API.post('/kyc/verify', { code: codeInput });
-      if (response.data.success) {
-        setKycStatus('verified');
-        setShowCodeModal(false);
-        if (updateUser) {
-          updateUser({ isVerified: true });
-        }
-        toast.success('Verificação KYC concluída com sucesso!');
-        navigate('/withdraw');
-      } else {
-        toast.error(response.data.message || 'Falha ao verificar código no servidor.');
-      }
-    } catch (error) {
-      console.error('Erro na verificação do KYC:', error);
-      toast.error(error.response?.data?.message || 'Erro ao comunicar com o servidor.');
-    } finally {
-      setVerifying(false);
-    }
+    setVerifying(false);
   };
 
   const openCodeModal = () => setShowCodeModal(true);
@@ -466,6 +466,7 @@ const KYC = () => {
         {mainContent}
       </div>
 
+      {/* Modal de Código de Verificação */}
       <AnimatePresence>
         {showCodeModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
