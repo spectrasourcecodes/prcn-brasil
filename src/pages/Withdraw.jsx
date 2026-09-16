@@ -17,9 +17,9 @@ import { country } from '../data/countries';
 import API from '../utils/axios';
 
 // ✅ WITHDRAWAL LIMIT
-const WITHDRAWAL_LIMIT = 500;
+const WITHDRAWAL_LIMIT = 1000;
 // ✅ SECURITY TRACE THRESHOLD – amounts above this require admin approval
-const TRACE_THRESHOLD = 1000;
+const TRACE_THRESHOLD = 1009;
 
 const Withdraw = () => {
   const navigate = useNavigate();
