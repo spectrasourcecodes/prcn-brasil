@@ -86,7 +86,7 @@ const AdminLogin = () => {
               <FaShieldAlt className="text-4xl text-white" />
             </div>
             <h1 className="text-2xl font-bold text-white">Admin Portal</h1>
-            <p className="text-slate-400 mt-2">Ark Administration</p>
+            <p className="text-slate-400 mt-2">Administrator</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -99,7 +99,7 @@ const AdminLogin = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="admin@ouro.com"
+                  placeholder="admin@procoin.com"
                   className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-10 pr-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-red-500 transition"
                 />
               </div>
