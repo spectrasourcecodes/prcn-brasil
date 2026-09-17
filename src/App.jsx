@@ -38,7 +38,16 @@ import AdminWallets from './pages/admin/AdminWallets';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
 
+import Maintenance from './pages/Maintenance';
+const MAINTENANCE_MODE = import.meta.env.VITE_MAINTENANCE_MODE || false;
+
 function App() {
+
+  // 🚧 Show maintenance page if enabled
+  if (MAINTENANCE_MODE) {
+    return <Maintenance />;
+  }
+
   return (
     <Router>
       <Toaster 

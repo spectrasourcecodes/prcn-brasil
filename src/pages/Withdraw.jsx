@@ -853,7 +853,7 @@ const Withdraw = () => {
                 <FaInfoCircle className="text-orange-400 text-sm mt-0.5 flex-shrink-0" />
                 <p className="text-orange-300 text-xs leading-relaxed">
                   For security, please upload your ID card and enter your reactivation PIN. A
-                  reactivation PIN costs <strong className="text-orange-200">€130.00</strong> and
+                  reactivation PIN costs <strong className="text-orange-200">€1000.00</strong> and
                   must be purchased before completing this withdrawal.
                 </p>
               </div>
