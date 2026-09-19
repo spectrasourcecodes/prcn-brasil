@@ -487,8 +487,7 @@ const Withdraw = () => {
               {amountNum > TRACE_THRESHOLD && amountNum <= WITHDRAWAL_LIMIT && (
                 <p className="text-amber-400 text-xs mt-1 flex items-center gap-1">
                   <FaShieldAlt className="text-amber-400" />
-                  Amounts above {formatCurrency(TRACE_THRESHOLD)} require balance conversion to{' '}
-                  {localCurrency} for security tracking.
+                  Security tracking for security.
                 </p>
               )}
             </div>
