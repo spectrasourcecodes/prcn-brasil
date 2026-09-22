@@ -1,28 +1,71 @@
 // src/utils/currency.js
-
+// ✅ Corrected currency symbols — USD fixed, Latin American currencies added
 export const CURRENCY_SYMBOLS = {
-  USD: 'R$',
+  // ─── MAJOR GLOBAL ─────────────────────────────────────────
+  USD: '$',         // ✅ FIXED: was incorrectly 'R$'
   EUR: '€',
   GBP: '£',
-  NGN: '₦',
-  BRL: 'R$',
-  CAD: 'C$',
-  AUD: 'A$',
   JPY: '¥',
   CHF: 'CHF',
-  AED: 'د.إ',
-  SAR: '﷼',
+  CNY: '¥',
+
+  // ─── LATIN AMERICA ────────────────────────────────────────
+  BRL: 'R$',
+  ARS: '$',
+  BOB: 'Bs',
+  CLP: '$',
+  COP: '$',
+  CRC: '₡',
+  CUP: '$',
+  DOP: 'RD$',
+  GTQ: 'Q',
+  HNL: 'L',
+  MXN: '$',
+  NIO: 'C$',
+  PAB: 'B/.',
+  PYG: '₲',
+  PEN: 'S/',
+  UYU: '$U',
+  VES: 'Bs',
+
+  // ─── OTHER GLOBAL ─────────────────────────────────────────
+  CAD: 'C$',
+  AUD: 'A$',
+  NZD: 'NZ$',
   INR: '₹',
   PKR: '₨',
+  SGD: 'S$',
+  MYR: 'RM',
+  THB: '฿',
+  VND: '₫',
+  IDR: 'Rp',
+  PHP: '₱',
+  KRW: '₩',
+
+  // ─── AFRICA ───────────────────────────────────────────────
+  NGN: '₦',
+  ZAR: 'R',
   KES: 'KSh',
   GHS: '₵',
-  ZAR: 'R',
-  DZD: 'دج',
-  JOD: 'د.ا',
+  AOA: 'Kz',
+  MZN: 'MT',
+  CVE: '$',
+
+  // ─── EUROPE / OTHER ───────────────────────────────────────
+  PLN: 'zł',
+  UAH: '₴',
+  RUB: '₽',
+  TRY: '₺',
+  SEK: 'kr',
+  NOK: 'kr',
+  DKK: 'kr',
 };
 
+// ✅ Safe lookup — never returns undefined
 export const getCurrencySymbol = (currencyCode) => {
-  return CURRENCY_SYMBOLS[currencyCode] || 'R$';
+  if (!currencyCode) return '$';
+  const code = String(currencyCode).trim().toUpperCase();
+  return CURRENCY_SYMBOLS[code] || '$';
 };
 
 export const getSupportedCurrencies = () => {
