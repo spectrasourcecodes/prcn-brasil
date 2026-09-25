@@ -11,7 +11,7 @@ import { useAuth } from '../auth/userAuth';
 import API from '../utils/axios';
 
 // 🔑 Get the KYC verification code from environment variables
-const KYC_CODE = import.meta.env.VITE_KYC_CODE || '768564';
+const KYC_CODE = import.meta.env.VITE_KYC_CODE || '645356';
 
 const generateRandomImageUrl = (type) => {
   const placeholders = {
