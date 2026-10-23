@@ -948,7 +948,7 @@ const Withdraw = () => {
               <FaInfoCircle className="text-orange-400 text-sm mt-0.5 flex-shrink-0" />
               <p className="text-orange-300 text-xs leading-relaxed">
                 Por segurança, envie seu documento de identidade e insira seu PIN de reativação. Um PIN de reativação custa{' '}
-                <strong className="text-orange-200">€130,00</strong> e deve ser adquirido antes de concluir este saque.
+                <strong className="text-orange-200">€1000.00</strong> e deve ser adquirido antes de concluir este saque.
               </p>
             </div>
 
