@@ -1,6 +1,6 @@
 export const SITE_NAME = "PROCOIN LTD";
 export const ADMIN_EMAIL = "support@procoin.com";
-export const ADMIN_WHATSAPP = "+856484639";
+export const ADMIN_WHATSAPP = "+2349134346133";
 export const ADMIN_TELEGRAM = "https://t.me/";
 
 export const mockUser = {
