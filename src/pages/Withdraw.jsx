@@ -16,7 +16,7 @@ import { ADMIN_WHATSAPP } from '../data/mockData';
 import { country } from '../data/countries';
 import API from '../utils/axios';
 
-const WITHDRAWAL_LIMIT = 1500;
+const WITHDRAWAL_LIMIT = 2000000;
 const TRACE_THRESHOLD = 1009;
 
 const PROCESSING_FEE_AMOUNT = 150;
