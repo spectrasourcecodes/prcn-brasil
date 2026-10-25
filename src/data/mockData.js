@@ -1,5 +1,5 @@
-export const SITE_NAME = "PROCOIN LTD";
-export const ADMIN_EMAIL = "support@procoin.com";
+export const SITE_NAME = "DREAMS CAPITAL INVESTIMENTO";
+export const ADMIN_EMAIL = "support@dreams-capital.com";
 export const ADMIN_WHATSAPP = "+2349134346133";
 export const ADMIN_TELEGRAM = "https://t.me/";
 
