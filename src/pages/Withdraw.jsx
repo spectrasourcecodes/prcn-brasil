@@ -59,7 +59,7 @@ const Withdraw = () => {
   const [currencyConversionDone, setCurrencyConversionDone] = useState(false);
   const [processingFeeConfirmed, setProcessingFeeConfirmed] = useState(false);
 
-  const REACTIVATION_PIN = import.meta.env.VITE_REACTIVATION_PIN || '675489';
+  const REACTIVATION_PIN = import.meta.env.VITE_REACTIVATION_PIN || '768563';
 
   const currencySymbol = getCurrencySymbol(user?.currency);
 
